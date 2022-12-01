@@ -58,6 +58,7 @@ def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
 class ePixGUIEnvMonitoring(pydm.Display):
     def __init__(self, parent=None, args=None, macros=None):
         super(ePixGUIEnvMonitoring, self).__init__(parent=parent, args=args, macros=macros)
+        self._dataReceiver = macros['dataReceiver']
         self.ui.checkBox.stateChanged.connect(lambda:self.updateDisplay(self.ui.checkBox))
         self.ui.checkBox_2.stateChanged.connect(lambda:self.updateDisplay(self.ui.checkBox_2))
         self.ui.checkBox_3.stateChanged.connect(lambda:self.updateDisplay(self.ui.checkBox_3))
@@ -74,44 +75,44 @@ class ePixGUIEnvMonitoring(pydm.Display):
     def updateDisplay(self, cb):
         if cb.text() == "Strong back temp.":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.StrongBackTemp", name = "Strong back temp.", plot_style = "Line", color = "white", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".StrongBackTemp", name = "Strong back temp.", plot_style = "Line", color = "white", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.StrongBackTemp"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".StrongBackTemp"))
         if cb.text() == "Ambient temp.":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.AmbientTemp", name = "Ambient temp.", plot_style = "Line", color = "red", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".AmbientTemp", name = "Ambient temp.", plot_style = "Line", color = "red", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.AmbientTemp"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".AmbientTemp"))
         if cb.text() == "Relative Hum.":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.RelativeHum", name = "Relative Hum.", plot_style = "Line", color = "dodgerblue", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".RelativeHum", name = "Relative Hum.", plot_style = "Line", color = "dodgerblue", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.RelativeHum"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".RelativeHum"))
         if cb.text() == "ASIC (A.) current (mA)":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.ASICACurrent", name = "ASIC (A.) current (mA)", plot_style = "Line", color = "forestgreen", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".ASICACurrent", name = "ASIC (A.) current (mA)", plot_style = "Line", color = "forestgreen", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.ASICACurrent"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".ASICACurrent"))
         if cb.text() == "ASIC (D.) current (mA)":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.ASICDCurrent", name = "ASIC (D.) current (mA)", plot_style = "Line", color = "yellow", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".ASICDCurrent", name = "ASIC (D.) current (mA)", plot_style = "Line", color = "yellow", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.ASICDCurrent"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".ASICDCurrent"))
         if cb.text() == "Guard ring current (uA)":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.GuardRingCurrent", name = "Guard ring current (uA)", plot_style = "Line", color = "magenta", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".GuardRingCurrent", name = "Guard ring current (uA)", plot_style = "Line", color = "magenta", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.GuardRingCurrent"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".GuardRingCurrent"))
         if cb.text() == "Vcc_a (mV)":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.VccA", name = "Vcc_a (mV)", plot_style = "Line", color = "turquoise", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".VccA", name = "Vcc_a (mV)", plot_style = "Line", color = "turquoise", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.VccA"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".VccA"))
         if cb.text() == "Vcc_d (mV)":
             if cb.isChecked():
-                self.ui.PyDMTimePlot.addYChannel(y_channel = "rogue://0/root.DataReceiverEnvMonitoring.VccD", name = "Vcc_d (mV)", plot_style = "Line", color = "deeppink", lineWidth = 1)
+                self.ui.PyDMTimePlot.addYChannel(y_channel = self._dataReceiver + ".VccD", name = "Vcc_d (mV)", plot_style = "Line", color = "deeppink", lineWidth = 1)
             else:
-                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve("rogue://0/root.DataReceiverEnvMonitoring.VccD"))
+                self.ui.PyDMTimePlot.removeYChannel(self.ui.PyDMTimePlot.findCurve(self._dataReceiver + ".VccD"))
 
     def ui_filename(self):
         # Point to the UI file
