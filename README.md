@@ -1,7 +1,7 @@
 # epix-viewer
 Viewer for ePix readouts
 
-## Useage
+## Usage
 
 1. Add the git submodule to the project
 2. Add the DataReceiver/Pseudoscope/EnvMonitor to the Root Class
