@@ -14,7 +14,10 @@ Viewer for ePix readouts
 
 3. Setup RateDrop object. this is needed for the data and enviroment monitor streams
 
-    `self.rate = rogue.interfaces.stream.RateDrop(True,0.1)`
+    ```
+    self.rate = rogue.interfaces.stream.RateDrop(True,0.1)
+    self.dmaStream[0][1] >> self.rate >> self.DataReceiver0    
+    ```
 
 4. The calls to the run the displays can be added to the register tree with subprocess
 
