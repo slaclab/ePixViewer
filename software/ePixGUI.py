@@ -22,7 +22,7 @@
 import os
 import pydm
 
-def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
+def runReceiverDisplay(dataReceiver, serverList='localhost:9090', root=None,
                    title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
 
     #pyrogue.pydm.runPyDM()
@@ -61,7 +61,7 @@ def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
 class ePixGUI(pydm.Display):
     def __init__(self, parent=None, args=None, macros=None):
         super().__init__(parent=parent, args=args, macros=macros)
-        print(f'{macros=}')
+        # print(f'{macros=}')
         self._dataReceiver = macros['dataReceiver']
         self.ui.PyDMImageView.newImageSignal.connect(self.updateDisplay)
         self.ui.PyDMImageView.scene.sigMouseClicked.connect(self.clickProcess)
@@ -104,5 +104,4 @@ class ePixGUI(pydm.Display):
 
     def ui_filepath(self):
         # Return the full path to the UI file
-        print(os.path.join(os.path.dirname(os.path.realpath(__file__)), self.ui_filename()))
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), self.ui_filename())

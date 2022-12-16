@@ -23,7 +23,7 @@
 import os
 import pydm
 
-def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
+def runMonitorDisplay(dataReceiver, serverList='localhost:9090', root=None,
                    title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
 
     if root is not None:
