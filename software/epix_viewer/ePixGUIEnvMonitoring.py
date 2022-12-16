@@ -24,7 +24,7 @@ import os
 import pydm
 
 def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
-    title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
+                   title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
 
     if root is not None:
 
@@ -116,7 +116,7 @@ class ePixGUIEnvMonitoring(pydm.Display):
 
     def ui_filename(self):
         # Point to the UI file
-        return 'ePixViewerEnvPyDM.ui'
+        return 'ui/ePixViewerEnvPyDM.ui'
 
     def ui_filepath(self):
         # Return the full path to the UI file

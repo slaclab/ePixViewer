@@ -23,7 +23,7 @@ import os
 import pydm
 
 def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
-    title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
+                   title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
 
     #pyrogue.pydm.runPyDM()
 
@@ -100,8 +100,9 @@ class ePixGUI(pydm.Display):
 
     def ui_filename(self):
         # Point to the UI file
-        return 'ePixViewerPyDM.ui'
+        return 'ui/ePixViewerPyDM.ui'
 
     def ui_filepath(self):
         # Return the full path to the UI file
+        print(os.path.join(os.path.dirname(os.path.realpath(__file__)), self.ui_filename()))
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), self.ui_filename())
