@@ -18,14 +18,14 @@ Viewer for ePix readouts
 
 4. The calls to the run the displays can be added to the register tree with subprocess
 
-```
-            @self.command()
-            def DisplayViewer():
-                subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.DataReceiver0 image &'], shell=True)
-            @self.command()
-            def DisplayPseudoScope():
-                subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.Pseudoscope0 pseudoscope &'], shell=True)
-            @self.command()
-            def DisplayEnvMonitor():
-                subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
-```   
+    ```
+    @self.command()
+    def DisplayViewer():
+        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.DataReceiver0 image &'], shell=True)
+    @self.command()
+    def DisplayPseudoScope():
+        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.Pseudoscope0 pseudoscope &'], shell=True)
+    @self.command()
+    def DisplayEnvMonitor():
+        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
+    ```   
