@@ -31,4 +31,5 @@ Viewer for ePix readouts
     @self.command()
     def DisplayEnvMonitor():
         subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
-    ```   
+    ```
+5. Copy the runLiveDisplay.py script to the location of the launch script for the daq/gui
