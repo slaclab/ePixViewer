@@ -7,9 +7,9 @@ Viewer for ePix readouts
 2. Add the DataReceiver/Pseudoscope/EnvMonitor to the Root Class
 
     ```
-    self.add(epix_viewer.dataReceivers.DataReceiverEpixUHR(name = f"DataReceiver0"))
-    self.add(epix_viewer.dataReceivers.DataReceiverPseudoScope(name = f"Pseudoscope0"))
-    self.add(epix_viewer.dataReceivers.DataReceiverEnvMonitoring(name = f"EnvMonitor0"))
+    self.add(DataReceiverEpixUHR(name = f"DataReceiver0"))
+    self.add(DataReceiverPseudoScope(name = f"Pseudoscope0"))
+    self.add(DataReceiverEnvMonitoring(name = f"EnvMonitor0"))
     ```
 
 3. Setup RateDrop object. this is needed for the data and enviroment monitor streams
@@ -32,4 +32,4 @@ Viewer for ePix readouts
     def DisplayEnvMonitor():
         subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
     ```
-5. Copy the runLiveDisplay.py script to the location of the launch script for the daq/gui
+5. Copy/symlink the runLiveDisplay.py script to the location of the launch script for the daq/gui
