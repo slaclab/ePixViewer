@@ -10,3 +10,4 @@ from .ePixM32Array import *
 from .ePixUhr import *
 from .ePixUHRMHzMode import *
 from .tixel48x48 import *
+from .sparkPixRt import *
