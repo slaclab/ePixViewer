@@ -1,5 +1,7 @@
 import argparse
-import ePixLiveDisplay
+import ePixViewer.software.ePixGUI
+import ePixViewer.software.ePixGUIEnvMonitoring
+import ePixViewer.software.ePixGUIPseudoScope
 
 parser = argparse.ArgumentParser('Pyrogue Client')
 
@@ -17,6 +19,7 @@ parser.add_argument('cmd',
                     type=str,
                     choices=['image','pseudoscope','monitor'],
                     help='Client command to issue')
+
 args = parser.parse_args()
 
 if args.cmd == 'image':
@@ -24,5 +27,6 @@ if args.cmd == 'image':
 
 elif args.cmd == 'pseudoscope':
     ePixLiveDisplay.ePixGUIEnvMonitoring.runEpixDisplay(dataReceiver=args.dataReceiver, serverList=args.server)
+
 elif args.cmd == 'monitor':
     ePixLiveDisplay.ePixGUIPseudoScope.runEpixDisplay(dataReceiver=args.dataReceiver, serverList=args.server)
