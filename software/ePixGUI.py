@@ -22,8 +22,8 @@
 import os
 import pydm
 
-def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
-    title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
+def runReceiverDisplay(dataReceiver, serverList='localhost:9090', root=None,
+                   title=None,sizeX=800,sizeY=1000,maxListExpand=5,maxListSize=100):
 
     #pyrogue.pydm.runPyDM()
 
@@ -50,6 +50,7 @@ def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
 
     macrosA = {}
     macrosA['dataReceiver'] = dataReceiver
+    macrosA['title'] = title
     app = pydm.PyDMApplication(ui_file=ui,
                                command_line_args=args,
                                macros=macrosA,
@@ -61,7 +62,7 @@ def runEpixDisplay(dataReceiver, serverList='localhost:9090', root=None,
 class ePixGUI(pydm.Display):
     def __init__(self, parent=None, args=None, macros=None):
         super().__init__(parent=parent, args=args, macros=macros)
-        print(f'{macros=}')
+        # print(f'{macros=}')
         self._dataReceiver = macros['dataReceiver']
         self.ui.PyDMImageView.newImageSignal.connect(self.updateDisplay)
         self.ui.PyDMImageView.scene.sigMouseClicked.connect(self.clickProcess)
@@ -100,7 +101,7 @@ class ePixGUI(pydm.Display):
 
     def ui_filename(self):
         # Point to the UI file
-        return 'ePixViewerPyDM.ui'
+        return 'ui/ePixViewerPyDM.ui'
 
     def ui_filepath(self):
         # Return the full path to the UI file
