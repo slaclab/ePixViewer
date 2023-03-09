@@ -50,6 +50,7 @@ def runReceiverDisplay(dataReceiver, serverList='localhost:9090', root=None,
 
     macrosA = {}
     macrosA['dataReceiver'] = dataReceiver
+    macrosA['title'] = title
     app = pydm.PyDMApplication(ui_file=ui,
                                command_line_args=args,
                                macros=macrosA,

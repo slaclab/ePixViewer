@@ -40,14 +40,21 @@ parser.add_argument('--dataReceiver',
                     help='Rogue Data Receiver path string',
                     default=None)
 
+parser.add_argument('--title',
+                    type=str,
+                    default=None,
+                    help='Title of display')
+
 parser.add_argument('cmd',
                     type=str,
                     choices=['image','pseudoscope','monitor'],
                     help='Client command to issue')
+
+
 args = parser.parse_args()
 
 if args.cmd == 'image':
-    runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
+    runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title)
 elif args.cmd == 'monitor':
     runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
