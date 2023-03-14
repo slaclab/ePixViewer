@@ -16,7 +16,7 @@ class DataReceiverSparkPixRt(DataReceiverBase):
         self.framePixelRow = 48
         self.framePixelColumn = 48
         self.counter = 0
-        self.lane_map = self.lane_map_RT()
+        self.row_map = self.row_map_RT()
 
     def read_uint12(self,data_chunk):
         #https://stackoverflow.com/questions/44735756/python-reading-12-bit-binary-files
@@ -25,54 +25,44 @@ class DataReceiverSparkPixRt(DataReceiverBase):
         snd_uint12 = ((mid_uint8 % 16) << 8) + lst_uint8
         return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
 
-    def lane_map_RT(self):
-        column_map = []
+    def row_map_RT(self):
+        row_map = np.empty([12,48])
+        row_map.fill(np.nan)
         cluster_map = np.empty(72)
+        
         #create the sp map
-        sp_map = np.array([0,3,6,1,4,7,2,5,8])
-
-        #create the cluster map
-        for index in range (8):
-            cluster_map[sp_map+(index*9)] = range(index,65+index,8)
-
+        sp_map = np.array([0,1,2,3,4,5,6,7,8])
+        
+        # create the cluster map
+        for index in range (72):
+            cluster_map[index] = index
+            
         #cast cluster_map to int
         cluster_map=cluster_map.astype(int)
-
-        #split the cluster in the 2 sp columns
-        cluster_map = np.concatenate([np.reshape(cluster_map [0:len(cluster_map)//2], (12,3)),np.reshape(cluster_map [len(cluster_map)//2:], (12,3))],axis =1 )
-
-        #re-linearize the cluster_map
-        cluster_map = np.reshape(cluster_map, 72)
-
-        #create the column map
-        for cluster_n in range (4):
-            column_map = np.append(column_map , (4*cluster_map) + cluster_n)
-
-        #cast column_map to int
-        column_map=column_map.astype(int)
-
-        #create the cluster_columns_map
-        lane_map_RT = np.concatenate([np.reshape(column_map*2,(48,6)),np.reshape((column_map*2)+1,(48,6))],axis =1 )
-
-        #re-linearize the cluster_columns_map
-        lane_map_RT = np.reshape(lane_map_RT, 576)
         
-        return lane_map_RT
+        #split the cluster in the 2 sp columns
+        cluster_map = np.concatenate([np.reshape(cluster_map [0:len(cluster_map)//2], (12,3)), np.flip(np.reshape(cluster_map [len(cluster_map)//2:], (12,3)),1)],axis =1 )
+        
+        # re-linearize the cluster_map
+        cluster_map = np.reshape(cluster_map, (12,6))
+        
+        #create the row map
+        for lanes_n in range (8):
+            row_map = np.concatenate([row_map,8*(cluster_map) + lanes_n],axis =1)
+            
+        return row_map[np.logical_not(np.isnan(row_map))]
 
-    def frame_reorder_RT(self,input_frame,lane_map):
-        frame= np.empty([48,1])
-        frame.fill(np.nan)
-
-        for lane_n in range (4):
+    def row_reorder_RT(self,input_frame,row_map):  
+        frame_map = []
+        for rows in range (4):
             #taking one lane at the time
-            frame_tmp = input_frame[lane_n,1:]
+            frame_tmp = input_frame[3-rows,3:]
             #using the map
-            lane_tmp = frame_tmp[lane_map]
-            #reshape
-            lane_tmp = np.reshape(lane_tmp, (48,12))
-            frame = np.concatenate([frame,lane_tmp],axis =1)
-
-        return frame[np.logical_not(np.isnan(frame))]    
+            row_map=row_map.astype(int)
+            frame_tmp = frame_tmp[row_map]
+            #
+            frame_map = np.append(frame_map , frame_tmp)
+        return frame_map  
 
     
     def descramble(self, frame):
@@ -81,19 +71,19 @@ class DataReceiverSparkPixRt(DataReceiverBase):
         
         #create the frames
         current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
-        rawData_12bit = np.empty((4,577), dtype=int)
+        rawData_12bit = np.empty((4,579), dtype=int)
 
         #get the frames from the stream
         rawData_8bit = frame.getNumpy(0, frame.getPayload()).view(np.uint8)
-        rawData_8bit = np.reshape(rawData_8bit[16:3478],(577,6))
+        rawData_8bit = np.reshape(rawData_8bit[16:3490],(579,6))
         rawData_8bit = np.flip(rawData_8bit,1).T
 
         #parse the 8bit chunks into the 12bit
-        for j in range (577):
+        for j in range (579):
             rawData_12bit[:,j] = self.read_uint12(rawData_8bit[:,j])
 
         #use the map to filter the pixels
-        frame = self.frame_reorder_RT(rawData_12bit, self.lane_map)
+        frame = self.row_reorder_RT(rawData_12bit, self.row_map)
         frame = np.reshape(frame, (48,48))
         frame = frame.astype(int)
 
