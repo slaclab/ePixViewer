@@ -39,7 +39,7 @@ class DataReceiverEpixUHR(DataReceiverBase):
         cluster_map=cluster_map.astype(int)
 
         #split the cluster in the 2 sp columns
-        cluster_map = np.concatenate([np.reshape(cluster_map [0:len(cluster_map)//2], (12,3)),np.reshape(cluster_map [len(cluster_map)//2:], (12,3))],axis =1 )
+        cluster_map = np.concatenate([np.reshape(cluster_map [0:len(cluster_map)//2], (12,3)),np.flip(np.reshape(cluster_map [len(cluster_map)//2:], (12,3)),1)],axis =1 )
 
         #re-linearize the cluster_map
         cluster_map = np.reshape(cluster_map, 72)
@@ -53,6 +53,8 @@ class DataReceiverEpixUHR(DataReceiverBase):
 
         #create the cluster_columns_map
         lane_map = np.concatenate([np.reshape(column_map*2,(168,6)),np.reshape((column_map*2)+1,(168,6))],axis =1 )
+
+        lane_map = np.flip(lane_map,1)
 
         #re-linearize the cluster_columns_map
         lane_map = np.reshape(lane_map, 2016)
