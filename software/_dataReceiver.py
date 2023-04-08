@@ -208,6 +208,8 @@ class DataReceiverBase(pr.DataReceiver):
             self.TimePlotQueue.append(0)
             self.TimePlotIndexQueue.append(index + i)
         self.nextIndex = 0
+        self.Queue = []
+        self.NoiseQueue = []
     
     def resetTimePlotMaxLen(self):
         self.TimePlotQueue = collections.deque(self.TimePlotQueue.copy(), maxlen = self.TimePlotMaxLen.get())
@@ -272,12 +274,12 @@ class DataReceiverBase(pr.DataReceiver):
                     imgView = copy(self.colormap)
                 # Showing crosshair:
                 crossHairVal = -sys.maxsize - 1
-                for i in range(self.x - 10, self.x + 10):
+                for i in range(self.x - 4, self.x + 5):
                     if i >= 0 and i < self.length and self.x > 0 and self.x < self.length and self.y - 1 > 0 and self.y + 1 < self.width:
                         imgView[i][self.y] = crossHairVal
                         imgView[i][self.y-1] = crossHairVal
                         imgView[i][self.y+1] = crossHairVal
-                for i in range(self.y - 10, self.y + 10):
+                for i in range(self.y - 4, self.y + 5):
                     if i >= 0 and i < self.width and self.y > 0 and self.y < self.width and self.x - 1 > 0 and self.x + 1 < self.length:
                         imgView[self.x][i] = crossHairVal
                         imgView[self.x-1][i] = crossHairVal

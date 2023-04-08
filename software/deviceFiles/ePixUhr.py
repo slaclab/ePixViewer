@@ -99,6 +99,6 @@ class DataReceiverEpixUHR(DataReceiverBase):
         frame = np.reshape(frame, (168,192))
         frame = frame.astype(int)
 
-        current_frame_temp = np.flip(frame,0)
+        current_frame_temp = np.flip(np.flip(frame,0),1)
 
         return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())
