@@ -450,6 +450,28 @@
           <string>${dataReceiver}.AutoCon</string>
          </property>
         </widget>
+        <widget class="PyDMCheckbox" name="PyDMCheckbox_gainMSB">
+         <property name="geometry">
+          <rect>
+           <x>380</x>
+           <y>90</y>
+           <width>141</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Gain MSB</string>
+         </property>
+         <property name="rules" stdset="0">
+          <string>[]</string>
+         </property>
+         <property name="channel" stdset="0">
+          <string>${dataReceiver}.GainMSB</string>
+         </property>
+        </widget>
         <widget class="PyDMLabel" name="PyDMLabel_24">
          <property name="geometry">
           <rect>

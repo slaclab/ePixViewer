@@ -195,6 +195,11 @@ class DataReceiverBase(pr.DataReceiver):
             value = False,
             description = "Whether to reset timeplot or not"
         ))
+        self.add(pr.LocalVariable(
+            name = "GainMSB",
+            value = True,
+            description = "If true shift the LSB as MSB"
+        ))
         maxlen = 1000
         index = -maxlen
         for i in range(maxlen):
@@ -225,7 +230,7 @@ class DataReceiverBase(pr.DataReceiver):
         with self.root.updateGroup():
             if len(self.colormap):
                 self.NoiseColormapReady.set(True, write = True)
-            imgDesc = self.descramble(frame)
+            imgDesc = self.descramble(frame,self.GainMSB.get())
             imgView = copy(imgDesc)
             imgRaw = copy(imgDesc)
 

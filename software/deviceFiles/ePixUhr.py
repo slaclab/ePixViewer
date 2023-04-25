@@ -77,7 +77,7 @@ class DataReceiverEpixUHR(DataReceiverBase):
         return frame[np.logical_not(np.isnan(frame))]    
 
     
-    def descramble(self, frame):
+    def descramble(self, frame, GainMSB):
         # print('Debug: Frame counter {}'.format(self.counter))
         # self.counter = self.counter + 1
         
@@ -100,5 +100,8 @@ class DataReceiverEpixUHR(DataReceiverBase):
         frame = frame.astype(int)
 
         current_frame_temp = np.flip(np.flip(frame,0),1)
+
+        if GainMSB:
+            current_frame_temp = np.where(current_frame_temp % 2 == 0, current_frame_temp // 2, (current_frame_temp - 1) // 2 + 2048)
 
         return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())
