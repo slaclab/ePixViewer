@@ -31,7 +31,7 @@ import time
 from copy import copy
 
 class DataReceiverBase(pr.DataReceiver):
-    def __init__(self, length, width, **kwargs):
+    def __init__(self, length, width,numClusters, **kwargs):
         super().__init__(**kwargs)
         self.length = length
         self.width = width

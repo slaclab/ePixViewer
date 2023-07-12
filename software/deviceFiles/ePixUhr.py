@@ -10,10 +10,10 @@ import time
 from copy import copy
 
 class DataReceiverEpixUHR(DataReceiverBase):
-    def __init__(self, **kwargs):
-        super().__init__(168, 192, **kwargs)
+    def __init__(self, numClusters, **kwargs):
+        super().__init__(168, 192, numClusters, **kwargs)
 
-        numClusters             = 14
+        numClusters             = numClusters
         numLanes                = 16
         self.framePixelRow      = numClusters*12
         self.framePixelColumn   = numLanes*12
@@ -90,8 +90,8 @@ class DataReceiverEpixUHR(DataReceiverBase):
 
         #get the frames from the stream
         rawData_8bit = frame.getNumpy(0, frame.getPayload()).view(np.uint8)
-        rawData_8bit = np.reshape(rawData_8bit[16:48424],(int(numPixels/numLanes)+1,24))
-        # rawData_8bit = np.reshape(rawData_8bit[16:13864],(int(numPixels/numLanes)+1,24))
+        # rawData_8bit = np.reshape(rawData_8bit[16:48424],(int(numPixels/numLanes)+1,24))
+        rawData_8bit = np.reshape(rawData_8bit[16:13864],(int(numPixels/numLanes)+1,24))
         rawData_8bit = np.flip(rawData_8bit,1).T
 
         #parse the 8bit chunks into the 12bit
