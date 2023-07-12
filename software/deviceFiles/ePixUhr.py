@@ -13,13 +13,11 @@ class DataReceiverEpixUHR(DataReceiverBase):
     def __init__(self, numClusters, **kwargs):
         super().__init__(168, 192, numClusters, **kwargs)
 
-        numClusters             = numClusters
         numLanes                = 16
         self.framePixelRow      = numClusters*12
         self.framePixelColumn   = numLanes*12
         numPixels               = int(self.framePixelRow * self.framePixelColumn)
         self.lane_map           = self.lane_map(numClusters, numLanes, numPixels)
-        
 
     def read_uint12(self,data_chunk):
         #https://stackoverflow.com/questions/44735756/python-reading-12-bit-binary-files
@@ -56,7 +54,6 @@ class DataReceiverEpixUHR(DataReceiverBase):
 
         #create the cluster_columns_map
         lane_map = np.concatenate([np.reshape(column_map*2,(int(12*numClusters),6)),np.reshape((column_map*2)+1,(int(12*numClusters),6))],axis =1 )
-
         lane_map = np.flip(lane_map,1)
 
         #re-linearize the cluster_columns_map
@@ -80,18 +77,20 @@ class DataReceiverEpixUHR(DataReceiverBase):
         return frame[np.logical_not(np.isnan(frame))]    
 
     
-    def descramble(self, frame, GainMSB):
+    def descramble(self, frame):
         #Intial setting
         numLanes                = 16 
         numPixels               = int(self.framePixelRow * self.framePixelColumn)
+        frameSize               = (int(numPixels/numLanes)+1)* 24
+        gainMSB                 = self.GainMSB.get()
+
         #create the frames
-        current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
-        rawData_12bit = np.empty((numLanes,int(numPixels/numLanes)+1), dtype=int)
+        current_frame_temp  = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
+        rawData_12bit       = np.empty((numLanes,int(numPixels/numLanes)+1), dtype=int)
 
         #get the frames from the stream
         rawData_8bit = frame.getNumpy(0, frame.getPayload()).view(np.uint8)
-        # rawData_8bit = np.reshape(rawData_8bit[16:48424],(int(numPixels/numLanes)+1,24))
-        rawData_8bit = np.reshape(rawData_8bit[16:13864],(int(numPixels/numLanes)+1,24))
+        rawData_8bit = np.reshape(rawData_8bit[16:frameSize+16],(int(numPixels/numLanes)+1,24))
         rawData_8bit = np.flip(rawData_8bit,1).T
 
         #parse the 8bit chunks into the 12bit
@@ -105,7 +104,7 @@ class DataReceiverEpixUHR(DataReceiverBase):
 
         current_frame_temp = np.flip(np.flip(frame,0),1)
 
-        if GainMSB:
+        if gainMSB:
             current_frame_temp = np.where(current_frame_temp % 2 == 0, current_frame_temp // 2, (current_frame_temp - 1) // 2 + 2048)
 
         return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())

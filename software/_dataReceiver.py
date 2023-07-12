@@ -31,7 +31,7 @@ import time
 from copy import copy
 
 class DataReceiverBase(pr.DataReceiver):
-    def __init__(self, length, width,numClusters, **kwargs):
+    def __init__(self, length, width, numClusters, **kwargs):
         super().__init__(**kwargs)
         self.length = length
         self.width = width
@@ -230,7 +230,7 @@ class DataReceiverBase(pr.DataReceiver):
         with self.root.updateGroup():
             if len(self.colormap):
                 self.NoiseColormapReady.set(True, write = True)
-            imgDesc = self.descramble(frame,self.GainMSB.get())
+            imgDesc = self.descramble(frame)
             imgView = copy(imgDesc)
             imgRaw = copy(imgDesc)
 
