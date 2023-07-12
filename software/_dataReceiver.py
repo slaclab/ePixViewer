@@ -322,7 +322,6 @@ class DataReceiverBase(pr.DataReceiver):
             
 
             # Histogram generation & automatic contrast processing:
-            print(self.Queue)
             array = np.array(self.Queue)
             imgArray = np.array(self.ImageQueue)
             mean = imgArray.mean()
