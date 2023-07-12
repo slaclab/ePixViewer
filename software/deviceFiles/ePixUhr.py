@@ -11,7 +11,7 @@ from copy import copy
 
 class DataReceiverEpixUHR(DataReceiverBase):
     def __init__(self, numClusters, **kwargs):
-        super().__init__(168, 192, numClusters, **kwargs)
+        super().__init__(192, 168, numClusters, **kwargs)
 
         numLanes                = 16
         self.framePixelRow      = numClusters*12
