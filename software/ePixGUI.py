@@ -86,14 +86,14 @@ class ePixGUI(pydm.Display):
 
     def clickProcess(self, event):
         pos = self.ui.PyDMImageView.getView().getViewBox().mapSceneToView(event.scenePos())
-        if int(pos.x()) > self.sizeX :
+        if self.sizeX != 0 and int(pos.x()) > self.sizeX :
             x = str(self.sizeX-1)
         elif int(pos.x()) < 0 :
             x = str(0)
         else :
             x = str(int(pos.x()))
 
-        if int(pos.y()) > self.sizeY :
+        if self.sizeY != 0 and  int(pos.y()) > self.sizeY :
             y = str(self.sizeY)
         elif int(pos.y()) < 0 :
             y = str(0)            
