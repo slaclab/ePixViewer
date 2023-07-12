@@ -51,6 +51,8 @@ def runReceiverDisplay(dataReceiver, serverList='localhost:9090', root=None,
     macrosA = {}
     macrosA['dataReceiver'] = dataReceiver
     macrosA['title'] = title
+    macrosA['sizeX'] = sizeX
+    macrosA['sizeY'] = sizeY
     app = pydm.PyDMApplication(ui_file=ui,
                                command_line_args=args,
                                macros=macrosA,
@@ -71,6 +73,8 @@ class ePixGUI(pydm.Display):
         # self.ui.lineEdit.textChanged.connect(self.setTimeSpan)
         # self.ui.PyDMCheckbox_15.stateChanged.connect(self.resetTimePlot)
         # self.ui.pushButton.clicked.connect(self.resetTimePlot)
+        self.sizeX = macros['sizeX']
+        self.sizeY = macros['sizeY']
 
     def updateDisplay(self):
         maxContrast = int(self.ui.PyDMLineEdit_5.displayText())
@@ -82,8 +86,20 @@ class ePixGUI(pydm.Display):
 
     def clickProcess(self, event):
         pos = self.ui.PyDMImageView.getView().getViewBox().mapSceneToView(event.scenePos())
-        x = str(int(pos.x()))
-        y = str(int(pos.y()))
+        if int(pos.x()) > self.sizeX :
+            x = str(self.sizeX-1)
+        elif int(pos.x()) < 0 :
+            x = str(0)
+        else :
+            x = str(int(pos.x()))
+
+        if int(pos.y()) > self.sizeY :
+            y = str(self.sizeY)
+        elif int(pos.y()) < 0 :
+            y = str(0)            
+        else :
+            y = str(int(pos.y()))
+
         self.ui.PyDMLineEdit_2.setText(x)
         self.ui.PyDMLineEdit_2.send_value()
         self.ui.PyDMLineEdit_6.setText(y)
