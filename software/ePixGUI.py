@@ -94,7 +94,7 @@ class ePixGUI(pydm.Display):
             x = str(int(pos.x()))
 
         if self.sizeY != 0 and  int(pos.y()) > self.sizeY :
-            y = str(self.sizeY)
+            y = str(self.sizeY-1)
         elif int(pos.y()) < 0 :
             y = str(0)            
         else :
