@@ -26,14 +26,14 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         self.lookupTableCol = np.zeros(imageSize, dtype=int)
         self.lookupTableRow = np.zeros(imageSize, dtype=int)
 
-       # based on descrambling pattern described here figure out the location of the pixel based on its index in raw data
-        # https://confluence.slac.stanford.edu/download/attachments/392826236/image-2023-8-8_10-33-33.png?version=1&modificationDate=1691516014000&api=v2
+        # based on descrambling pattern described here figure out the location of the pixel based on its index in raw data
+        # https://confluence.slac.stanford.edu/download/attachments/392826236/image-2023-8-9_16-6-42.png?version=1&modificationDate=1691622403000&api=v2
         descarambledImg = np.zeros((numOfBanks, bankHeight,bankWidth), dtype=int)
         for row in range(bankHeight) :
             for col in range (bankWidth) : 
                 for bank in range (numOfBanks) :
-                    #                                  (Odds cols w/ offset   +  row offset      + increment every two cols)   * fill one pixel / bank + bank increment
-                    descarambledImg[bank, row, col] = ((col % 2) * 1536       +   32 * row       + int(col / 2))               * numOfBanks            + bank
+                    #                                  (even cols w/ offset       +  row offset       + increment every two cols)   * fill one pixel / bank + bank increment
+                    descarambledImg[bank, row, col] = (((col+1) % 2) * 1536       +   32 * row        + int(col / 2))               * numOfBanks            + bank
         
 
         # reorder banks from
