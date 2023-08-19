@@ -48,7 +48,6 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         #  1     5     9    13    17    21         <= Quadrant[1] 48 x 64 x 6
         #  0     4     8    12    16    20         <= Quadrant[0] 48 x 64 x 6
 
-
         quadrant = [bytearray(),bytearray(),bytearray(),bytearray()]
         for i in range(4):
             quadrant[i] = np.concatenate((descarambledImg[0+i],
@@ -62,11 +61,27 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         descarambledImg = np.concatenate((descarambledImg, quadrant[2]),0)
         descarambledImg = np.concatenate((descarambledImg, quadrant[3]),0)  
 
-        # reverse pixxel original index to new row and column to generate lookup tables
+        # Work around ASIC/firmware bug: first and last row of each bank are exchanged
+        # Create lookup table where each row points to itself
+        hardwareBugWorkAroundRowLUT = np.zeros((192))
+        for index in range (self.framePixelRow) :
+            hardwareBugWorkAroundRowLUT[index] = index
+        # Then we need to exchange row 0 with 47, 48 with 95, 96 with 143, 144 with 191
+        hardwareBugWorkAroundRowLUT[0] = 47
+        hardwareBugWorkAroundRowLUT[47] = 0
+        hardwareBugWorkAroundRowLUT[48] = 95
+        hardwareBugWorkAroundRowLUT[95] = 48
+        hardwareBugWorkAroundRowLUT[96] = 143
+        hardwareBugWorkAroundRowLUT[143] = 96
+        hardwareBugWorkAroundRowLUT[144] = 191
+        hardwareBugWorkAroundRowLUT[191] = 144
+
+
+        # reverse pixel original index to new row and column to generate lookup tables
         for row in range (self.framePixelRow) :
             for col in range (self.framePixelColumn):  
                 index = descarambledImg[row,col]
-                self.lookupTableRow[index] = row
+                self.lookupTableRow[index] = hardwareBugWorkAroundRowLUT[row]
                 self.lookupTableCol[index] = col
 
         # reshape column and row lookup table
