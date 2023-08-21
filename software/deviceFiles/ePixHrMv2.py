@@ -66,10 +66,11 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         hardwareBugWorkAroundRowLUT = np.zeros((self.framePixelRow))
         for index in range (self.framePixelRow) :
             hardwareBugWorkAroundRowLUT[index] = index
-        # Then we need to exchange row 0 with 47, 48 with 95, 96 with 143, 144 with 191
-        for index in range (0, self.framePixelRow, pixelsPerLanesRows) :
-            hardwareBugWorkAroundRowLUT[index] = index + pixelsPerLanesRows - 1
-            hardwareBugWorkAroundRowLUT[index + pixelsPerLanesRows - 1] = index
+        # Then we move data from row 47 to 191, 191 to 143, 143 to 95, and 95 to 47
+        hardwareBugWorkAroundRowLUT[95] = 47 
+        hardwareBugWorkAroundRowLUT[143] = 95
+        hardwareBugWorkAroundRowLUT[191] = 143 
+        hardwareBugWorkAroundRowLUT[47] = 191
 
         # reverse pixel original index to new row and column to generate lookup tables
         for row in range (self.framePixelRow) :
