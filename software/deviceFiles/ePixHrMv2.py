@@ -62,15 +62,15 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         descarambledImg = np.concatenate((descarambledImg, quadrant[3]),0)  
 
         # Work around ASIC/firmware bug: first and last row of each bank are exchanged
-        # Create lookup table where each row points to itself
+        # Create lookup table where each row points to the next
         hardwareBugWorkAroundRowLUT = np.zeros((self.framePixelRow))
         for index in range (self.framePixelRow) :
-            hardwareBugWorkAroundRowLUT[index] = index
-        # Then we move data from row 47 to 191, 191 to 143, 143 to 95, and 95 to 47
-        hardwareBugWorkAroundRowLUT[95] = 47 
-        hardwareBugWorkAroundRowLUT[143] = 95
-        hardwareBugWorkAroundRowLUT[191] = 143 
-        hardwareBugWorkAroundRowLUT[47] = 191
+            hardwareBugWorkAroundRowLUT[index] = index + 1
+        # handle bank/lane roll over cases
+        hardwareBugWorkAroundRowLUT[47] = 0 
+        hardwareBugWorkAroundRowLUT[95] = 48
+        hardwareBugWorkAroundRowLUT[143] = 96 
+        hardwareBugWorkAroundRowLUT[191] = 144
 
         # reverse pixel original index to new row and column to generate lookup tables
         for row in range (self.framePixelRow) :
