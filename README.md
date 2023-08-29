@@ -23,13 +23,13 @@ Viewer for ePix readouts
 
     ```
     @self.command()
-    def DisplayViewer():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.DataReceiver0 image &'], shell=True)
+        @self.command()
+        def DisplayViewer0():
+            subprocess.Popen(["python", <Full path to runLiveDisplay.py script>/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.DataReceiver0", "image", "--title", "DataReceiver0", "--sizeY", "192", "--sizeX", "384"], shell=False)
     @self.command()
     def DisplayPseudoScope():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.Pseudoscope0 pseudoscope &'], shell=True)
+        subprocess.call(['<Full path to runLiveDisplay.py script>/runLiveDisplay.py --dataReceiver rogue://0/root.Pseudoscope0 pseudoscope &'], shell=True)
     @self.command()
     def DisplayEnvMonitor():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
+        subprocess.call(['<Full path to runLiveDisplay.py script>/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
     ```
-5. Copy the runLiveDisplay.py script to the location of the launch script for the daq/gui
