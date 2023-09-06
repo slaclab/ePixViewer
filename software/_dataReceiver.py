@@ -257,11 +257,11 @@ class DataReceiverBase(pr.DataReceiver):
                     self.DarkReady.set(True, write = True)
                     print("\n*****Dark ready*****\n")
                     self.CollectDark.set(False, write = True)
-            if self.ApplyDark.get() is not self.oldApplyDark:
-                self.Queue = []
-                self.ImageQueue = []
-                self.NoiseQueue = []
-                self.oldApplyDark = self.ApplyDark.get()
+            # if self.ApplyDark.get() is not self.oldApplyDark:
+            #     self.Queue = []
+            #     self.ImageQueue = []
+            #     self.NoiseQueue = []
+            #     self.oldApplyDark = self.ApplyDark.get()
             if self.ApplyDark.get():
                 imgView = np.intc(imgView) - self.AvgDark.get()
                 imgRaw = np.intc(imgRaw) - self.AvgDark.get()
