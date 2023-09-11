@@ -208,6 +208,8 @@ class DataReceiverBase(pr.DataReceiver):
             self.TimePlotQueue.append(0)
             self.TimePlotIndexQueue.append(index + i)
         self.nextIndex = 0
+        self.Queue.clear()
+        self.NoiseQueue.clear()
     
     def resetTimePlotMaxLen(self):
         self.TimePlotQueue = collections.deque(self.TimePlotQueue.copy(), maxlen = self.TimePlotMaxLen.get())
@@ -251,9 +253,9 @@ class DataReceiverBase(pr.DataReceiver):
                     print("\n*****Dark ready*****\n")
                     self.CollectDark.set(False, write = True)
             if self.ApplyDark.get() is not self.oldApplyDark:
-                self.Queue = []
-                self.ImageQueue = []
-                self.NoiseQueue = []
+                self.Queue.clear()
+                self.ImageQueue.clear()
+                self.NoiseQueue.clear()
                 self.oldApplyDark = self.ApplyDark.get()
             if self.ApplyDark.get():
                 imgView = np.intc(imgView) - self.AvgDark.get()
@@ -261,35 +263,38 @@ class DataReceiverBase(pr.DataReceiver):
             if self.ShowDark.get():
                 self.Data.set(self.AvgDark.get(), write = True)
             else:
-                if int(self.X.get()) is not self.y or int(self.Y.get()) is not self.x:
-                    self.Queue = []
+                if int(self.X.get()) is not self.x or int(self.Y.get()) is not self.y:
+                    self.Queue.clear()
 
-                # Switch x and y due to PyDMImageViewer row-coloumn switching:
-                self.y = int(self.X.get())
-                self.x = int(self.Y.get())
+                # Latch X and Y
+                self.x = int(self.X.get())
+                self.y = int(self.Y.get())
 
                 if self.NoiseColormap.get():
                     imgView = copy(self.colormap)
+
                 # Showing crosshair:
                 crossHairVal = -sys.maxsize - 1
-                for i in range(self.x - 10, self.x + 10):
+                # imgView (rows, columns) = imgView (y, x) = imgView (y, x) = imgView (width, length)
+                for i in range(self.x - 4, self.x + 5):
                     if i >= 0 and i < self.length and self.x > 0 and self.x < self.length and self.y - 1 > 0 and self.y + 1 < self.width:
-                        imgView[i][self.y] = crossHairVal
-                        imgView[i][self.y-1] = crossHairVal
-                        imgView[i][self.y+1] = crossHairVal
-                for i in range(self.y - 10, self.y + 10):
+                        imgView[self.y][i] = crossHairVal
+                        imgView[self.y-1][i] = crossHairVal
+                        imgView[self.y+1][i] = crossHairVal
+                for i in range(self.y - 4, self.y + 5):
                     if i >= 0 and i < self.width and self.y > 0 and self.y < self.width and self.x - 1 > 0 and self.x + 1 < self.length:
-                        imgView[self.x][i] = crossHairVal
-                        imgView[self.x-1][i] = crossHairVal
-                        imgView[self.x+1][i] = crossHairVal
+                        imgView[i][self.x] = crossHairVal
+                        imgView[i][self.x-1] = crossHairVal
+                        imgView[i][self.x+1] = crossHairVal
+
                 self.Data.set(imgView, write = True)
             
             self.NoiseQueue.append(imgRaw)
-            # Setting data for timeplot and horizontal/vertical plots:
+            # Setting data for timeplot and horizontal/vertical plots: imgRaw (rows, columns) = imgRaw (Y, X) = imgRaw (y, x) =  imgRaw (width, length)
             if self.x >= 0 and self.x < self.length and self.y >= 0 and self.y < self.width:
                 # Timeplot processing
-                self.PixelDataScalar.set(int(imgRaw[self.x][self.y]), write = True)
-                self.TimePlotQueue.append(int(imgRaw[self.x][self.y]))
+                self.PixelDataScalar.set(int(imgRaw[self.y][self.x]), write = True)
+                self.TimePlotQueue.append(int(imgRaw[self.y][self.x]))
                 self.TimePlotIndexQueue.append(self.nextIndex)
                 self.nextIndex += 1
                 self.PixelData.set(np.array(self.TimePlotQueue), write = True)
@@ -299,25 +304,21 @@ class DataReceiverBase(pr.DataReceiver):
                 if self.NoiseColormap.get():
                     temp = self.colormap
                 if self.PlotHorizontal.get():
-                    self.Horizontal.set(temp[self.x], write = True)
+                    self.Horizontal.set(temp[self.y, :], write = True)
                 else:
                     self.Horizontal.set(np.zeros(1), write = True)
                 if self.PlotVertical.get():
-                    self.Vertical.set(temp[:,self.y], write = True)
+                    self.Vertical.set(temp[:, self.x], write = True)
                 else:
                     self.Vertical.set(np.zeros(1), write = True)
-                self.Queue.append(imgRaw[self.x][self.y])
+                self.Queue.append(imgRaw[self.y][self.x])
                 self.ImageQueue.append(imgRaw)
-
-            
 
             # Histogram generation & automatic contrast processing:
             array = np.array(self.Queue)
-            imgArray = np.array(self.ImageQueue)
-            mean = imgArray.mean()
-            rms = imgArray.std()
-            low = np.int32(array.min())
-            high = np.int32(array.max())
+            
+            low = np.int32(np.min(array,initial=0))
+            high = np.int32(np.max(array,initial=0))
             binsA = np.arange(low - 10, high + 10, 1)
             histogram, bins = np.histogram(array, bins=binsA)
             bins = np.delete(bins, len(bins) - 1, 0)
@@ -325,12 +326,16 @@ class DataReceiverBase(pr.DataReceiver):
             self.Bins.set(bins, write = True)
             if self.AutoCon.get():
                 multiplier = 2
+
                 if self.ApplyDark.get():
                     multiplier = 10
                 if self.ShowDark.get():
                     self.MaxPixVal.set(int(self.AvgDark.get().mean() + multiplier * self.AvgDark.get().std()), write = True)
                     self.MinPixVal.set(int(self.AvgDark.get().mean() - multiplier * self.AvgDark.get().std()), write = True)
                 else:
+                    imgArray = np.array(self.ImageQueue)
+                    mean = imgArray.mean()
+                    rms = imgArray.std()
                     self.MaxPixVal.set(int(mean + multiplier * rms), write = True)
                     self.MinPixVal.set(int(mean - multiplier * rms), write = True)
                 if self.NoiseColormap.get():
