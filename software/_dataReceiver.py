@@ -213,8 +213,8 @@ class DataReceiverBase(pr.DataReceiver):
             self.TimePlotQueue.append(0)
             self.TimePlotIndexQueue.append(index + i)
         self.nextIndex = 0
-        self.Queue = []
-        self.NoiseQueue = []
+        self.Queue.clear()
+        self.NoiseQueue.clear()
     
     def resetTimePlotMaxLen(self):
         self.TimePlotQueue = collections.deque(self.TimePlotQueue.copy(), maxlen = self.TimePlotMaxLen.get())
@@ -257,11 +257,11 @@ class DataReceiverBase(pr.DataReceiver):
                     self.DarkReady.set(True, write = True)
                     print("\n*****Dark ready*****\n")
                     self.CollectDark.set(False, write = True)
-            # if self.ApplyDark.get() is not self.oldApplyDark:
-            #     self.Queue = []
-            #     self.ImageQueue = []
-            #     self.NoiseQueue = []
-            #     self.oldApplyDark = self.ApplyDark.get()
+            if self.ApplyDark.get() is not self.oldApplyDark:
+                self.Queue.clear()
+                self.ImageQueue.clear()
+                self.NoiseQueue.clear()
+                self.oldApplyDark = self.ApplyDark.get()
             if self.ApplyDark.get():
                 imgView = np.intc(imgView) - self.AvgDark.get()
                 imgRaw = np.intc(imgRaw) - self.AvgDark.get()
@@ -269,7 +269,7 @@ class DataReceiverBase(pr.DataReceiver):
                 self.Data.set(self.AvgDark.get(), write = True)
             else:
                 if int(self.X.get()) is not self.x or int(self.Y.get()) is not self.y:
-                    self.Queue = []
+                    self.Queue.clear()
 
                 # Latch X and Y
                 self.x = int(self.X.get())
@@ -323,9 +323,7 @@ class DataReceiverBase(pr.DataReceiver):
 
             # Histogram generation & automatic contrast processing:
             array = np.array(self.Queue)
-            imgArray = np.array(self.ImageQueue)
-            mean = imgArray.mean()
-            rms = imgArray.std()
+            
             low = np.int32(np.min(array,initial=0))
             high = np.int32(np.max(array,initial=0))
             binsA = np.arange(low - 10, high + 10, 1)
@@ -335,12 +333,16 @@ class DataReceiverBase(pr.DataReceiver):
             self.Bins.set(bins, write = True)
             if self.AutoCon.get():
                 multiplier = 2
+
                 if self.ApplyDark.get():
                     multiplier = 10
                 if self.ShowDark.get():
                     self.MaxPixVal.set(int(self.AvgDark.get().mean() + multiplier * self.AvgDark.get().std()), write = True)
                     self.MinPixVal.set(int(self.AvgDark.get().mean() - multiplier * self.AvgDark.get().std()), write = True)
                 else:
+                    imgArray = np.array(self.ImageQueue)
+                    mean = imgArray.mean()
+                    rms = imgArray.std()
                     self.MaxPixVal.set(int(mean + multiplier * rms), write = True)
                     self.MinPixVal.set(int(mean - multiplier * rms), write = True)
                 if self.NoiseColormap.get():
