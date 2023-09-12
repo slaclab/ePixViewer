@@ -52,10 +52,12 @@ parser.add_argument('cmd',
 
 parser.add_argument('--sizeY',
                     type=int,
+                    default=1000,
                     help='Rows of image')
 
 parser.add_argument('--sizeX',
                     type=int,
+                    default=800,
                     help='Columns of image')
 
 args = parser.parse_args()
