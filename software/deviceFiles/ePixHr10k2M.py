@@ -35,8 +35,8 @@ class DataReceiverEpixHr10k2M(DataReceiverBase):
                 #reshape data into 2D array per bank
                 adcImg2 = adcImg[0:adcImg.shape[0],i].reshape(-1,32)
                 #apply row-shift patch
-                #adcImg2[1:,30] = adcImg2[0:adcImg2.shape[0]-1,30]
-                #adcImg2[1:,31] = adcImg2[0:adcImg2.shape[0]-1,31]
+                adcImg2[1:,30] = adcImg2[0:adcImg2.shape[0]-1,30]
+                adcImg2[1:,31] = adcImg2[0:adcImg2.shape[0]-1,31]
                 #concatenate bank data into a single image per asic
                 if i == 0:
                     quadrant0sq = adcImg2
