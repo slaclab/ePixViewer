@@ -9,13 +9,14 @@ import collections
 import time
 from copy import copy
 
-ASIC_NUM    = 4
-ASIC_WIDTH = 192
-ASIC_HEIGHT  = 144
+
 # expecting for even number of pixels : (2 + x) x 48 / 2
 class DataReceiverEpixHr10k2M(DataReceiverBase):
     def __init__(self, **kwargs):
-        super().__init__(ASIC_WIDTH * ASIC_NUM, ASIC_HEIGHT, **kwargs)
+        self.ASIC_NUM    = 4
+        self.ASIC_WIDTH = 192
+        self.ASIC_HEIGHT  = 144
+        super().__init__(self.ASIC_WIDTH * self.ASIC_NUM, self.ASIC_HEIGHT, **kwargs)
 
     def descramble(self, frame):
         # Function to descramble raw frames into numpy arrays
@@ -25,7 +26,7 @@ class DataReceiverEpixHr10k2M(DataReceiverBase):
 
         #print("{} got payload of size {} (uint16). Extracted image of size {} (uint16) {}".format(self.name, payload.shape[0], img.shape[0], img))
         if (len(payload)==110640):
-            img = payload[24:ASIC_HEIGHT * ASIC_WIDTH * ASIC_NUM + 24]
+            img = payload[24:self.ASIC_HEIGHT * self.ASIC_WIDTH * self.ASIC_NUM + 24]
 
             quadrant0 = img
             #descramble image
@@ -45,7 +46,7 @@ class DataReceiverEpixHr10k2M(DataReceiverBase):
             imgDesc = quadrant0sq
         else:
             print("descramble error")
-            imgDesc = np.zeros((ASIC_HEIGHT,ASIC_WIDTH * ASIC_NUM), dtype='uint16')
+            imgDesc = np.zeros((self.ASIC_HEIGHT,self.ASIC_WIDTH * self.ASIC_NUM), dtype='uint16')
             
         # returns final image
         return imgDesc
