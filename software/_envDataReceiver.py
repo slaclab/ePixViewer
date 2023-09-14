@@ -97,7 +97,6 @@ class EnvDataReceiver(pr.DataReceiver):
     def process(self, frame):
         
         payload = frame.getNumpy(0, frame.getPayload()).view(np.uint32)
-        print('PAYLOAD LEN: {}'.format(len(payload)))
         '''
         datalen = int((len(payload)-26)/2)
 
