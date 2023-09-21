@@ -32,100 +32,104 @@ from copy import copy
 
 import subprocess
 import os
+import json
 
 class EnvDataReceiver(pr.DataReceiver):
-    def __init__(self, **kwargs):
+    def __init__(self, config, clockT, **kwargs):
         super().__init__(**kwargs)
+        
+        self.configChannels = config
+        self.channelSel = 0
+        self.clockT = clockT
+        self.tickCount = 0
+        
+        enum = {}
+        
+        for i in range(len(config)):
+            enum[i] = {
+                'name': config[i]['name'],
+                'color': config[i]['color']
+            }
+            
+            self.add(pr.LocalVariable(
+                name = 'selCh{}'.format(i),
+                description = 'selectChannel',
+                value = True,
+                hidden=True
+            ))
 
-        print(kwargs)
+            self.add(pr.LocalVariable(
+                name = "data[{}]".format(i),
+                description = "Data Y",
+                value = [],
+                hidden=True
+            ))
 
+            self.add(pr.LocalVariable(
+                name = "dataX[{}]".format(i),
+                description = "Data X",
+                value = [],
+                hidden=True
+            ))
+
+            self.add(pr.LocalVariable(
+                name = config[i]['name'].replace(' ','_').replace('(','_').replace(')','').replace('[','_').replace(']','').replace('.','').replace('-','').replace('%','percent'),
+                description = "{} value".format(config[i]['name']),
+                value = 0.0,
+            ))
+        
+        self.add(pr.LocalVariable(
+            name = 'Ellapsed',
+            description = "Duration in seconds since measurement starts",
+            value = 0.0,
+        ))
 
         @self.command()
         def OpenGUI():
-            subprocess.Popen(["python", os.path.dirname(os.path.abspath(__file__))+"/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.{}".format(kwargs['name']), "pseudoscope", "--title", "PseudoScope 0"], shell=False)
-
-        '''
-        self.add(pr.LocalVariable(
-            name = "ShowChannelBData",
-            description = "Enable channel B",
-            value = True
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "ShowChannelAData",
-            description = "Enable channel A",
-            value = True
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "ChannelAData",
-            description = "channel A",
-            value = []
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "ChannelBData",
-            description = "channel B",
-            value = []
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "FFTYA",
-            description = "channel A FFT (Y data)",
-            value = []
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "FFTXA",
-            description = "channel A FFT (X data)",
-            value = []
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "FFTYB",
-            description = "channel B FFT (Y data)",
-            value = []
-        ))
-
-        self.add(pr.LocalVariable(
-            name = "FFTXB",
-            description = "channel B FFT (X data)",
-            value = []
-        ))
-        '''
-
-    def process(self, frame):
+            subprocess.Popen(["python", os.path.dirname(os.path.abspath(__file__))+"/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.{}".format(kwargs['name']), "env", "--title", "Environment 0"], shell=False)
         
+        self.add(pr.LocalVariable(
+            name = 'channelList',
+            description = 'channel list for GUI configuration',
+            value = json.dumps(enum),
+            hidden=True
+        ))
+        
+    def process(self, frame):
         payload = frame.getNumpy(0, frame.getPayload()).view(np.uint32)
-        print('PAYLOAD LEN: {}'.format(len(payload)))
+        
+        self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
+        
+        for i in range(len(self.configChannels)):
+            newData = self.configChannels[i]['conv'](int(payload[i+1]))
+        
+            arr = self.data[i].get()
+            arr = np.append(arr, newData)
+            
+            xarr = self.dataX[i].get()
+            if len(xarr) == 0:
+                xarr = np.append(xarr, 0)
+            else:
+                xarr = np.append(xarr, xarr[-1]+(float(self.tickCount)*self.clockT*16))
+                
+            self.data[i].set(arr)
+            self.dataX[i].set(xarr)
+            
+            self._nodes[self.configChannels[i]['name'].replace(' ','_').replace('(','_').replace(')','').replace('[','_').replace(']','').replace('.','').replace('-','').replace('%','percent')].set(round(newData,5))
+            
+        self.Ellapsed.set(round((float(self.tickCount)*self.clockT*16), 2))
         '''
-        datalen = int((len(payload)-26)/2)
-
-        channelA = -1.0 + payload[16:16+datalen] * (2.0 / 2**14)
-        channelB = -1.0 + payload[16+datalen:16+(2*datalen)] * (2.0 / 2**14)
-
-        sr = 1
-
-        X = fft(channelA)
-        N = len(X)
-        n = np.arange(N)
-        T = N/sr
-        freq = n/T
-
-
-        self.ChannelAData.set(channelA)
-        self.FFTXA.set(freq)
-        self.FFTYA.set(np.abs(X))
-
-        X = fft(channelB)
-        N = len(X)
-        n = np.arange(N)
-        T = N/sr
-        freq = n/T
-
-        self.ChannelBData.set(channelB)
-        self.FFTXB.set(freq)
-        self.FFTYB.set(np.abs(X))
+        
+        print('PAYLOAD LEN: {}'.format(len(payload)))
+        print('{:x} - tick count : {:x} \'h'.format((payload[0] & 0xf0000000) >> 28, int(payload[0] & 0x0fffffff)))
+        print('Ch {:d}: {:f}'.format((payload[1] & 0xff000000) >> 24, (5* float(payload[1] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[2] & 0xff000000) >> 24, (5* float(payload[2] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[3] & 0xff000000) >> 24, (5* float(payload[3] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[4] & 0xff000000) >> 24, (5* float(payload[4] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[5] & 0xff000000) >> 24, (5* float(payload[5] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[6] & 0xff000000) >> 24, (5* float(payload[6] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[7] & 0xff000000) >> 24, (5* float(payload[7] & 0xffffff) / 16777216)))
+        print('Ch {:d}: {:f}'.format((payload[8] & 0xff000000) >> 24, (5* float(payload[8] & 0xffffff) / 16777216)))
         '''
 
         return
