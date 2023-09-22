@@ -35,13 +35,14 @@ import os
 import json
 
 class EnvDataReceiver(pr.DataReceiver):
-    def __init__(self, config, clockT, **kwargs):
+    def __init__(self, config, rawToData, clockT, **kwargs):
         super().__init__(**kwargs)
         
         self.configChannels = config
         self.channelSel = 0
         self.clockT = clockT
         self.tickCount = 0
+        self.rawToData = rawToData
         
         enum = {}
         
@@ -101,7 +102,7 @@ class EnvDataReceiver(pr.DataReceiver):
         self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
         
         for i in range(len(self.configChannels)):
-            newData = self.configChannels[i]['conv'](int(payload[i+1]))
+            newData = self.configChannels[i]['conv'](self.rawToData(int(payload[i+1])))
         
             arr = self.data[i].get()
             arr = np.append(arr, newData)

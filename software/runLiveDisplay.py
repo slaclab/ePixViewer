@@ -56,7 +56,7 @@ args = parser.parse_args()
 if args.cmd == 'image':
     runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title)
 elif args.cmd == 'monitor':
-    runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
+    runEnvScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
     runScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'env':
