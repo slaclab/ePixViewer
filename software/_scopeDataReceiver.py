@@ -30,7 +30,7 @@ import collections
 import time
 from copy import copy
 
-from numpy.fft import fft, ifft
+from numpy.fft import rfft, rfftfreq
 import subprocess
 import os
 
@@ -97,31 +97,25 @@ class ScopeDataReceiver(pr.DataReceiver):
         payload = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
         datalen = int((len(payload)-26)/2)
 
-        channelA = -1.0 + payload[16:16+datalen] * (2.0 / 2**14)
-        channelB = -1.0 + payload[16+datalen:16+(2*datalen)] * (2.0 / 2**14)
+        channelA = (2.0-0.053) + (payload[16:16+datalen] * (2.0 / 2**14))*(-1.04)
+        channelB = (2.0-0.053) + (payload[16+datalen:16+(2*datalen)] * (2.0 / 2**14))*(-1.04)
 
-        sr = 1
-
-        X = fft(channelA)
-        N = len(X)
-        n = np.arange(N)
-        T = N/sr
-        freq = n/T
-
+        N = len(channelA)
+        T = 4e-8
+        freqs = rfftfreq(N, T)
+        X = np.abs(rfft(channelA))
 
         self.ChannelAData.set(channelA)
-        self.FFTXA.set(freq)
-        self.FFTYA.set(np.abs(X))
+        self.FFTXA.set(freqs[2:])
+        self.FFTYA.set(X[2:])
 
-        X = fft(channelB)
-        N = len(X)
-        n = np.arange(N)
-        T = N/sr
-        freq = n/T
+        N = len(channelB)
+        T = 4e-8
+        freqs = rfftfreq(N, T)
+        X = np.abs(rfft(channelB))
 
         self.ChannelBData.set(channelB)
-        self.FFTXB.set(freq)
-        self.FFTYB.set(np.abs(X))
-
+        self.FFTXB.set(freqs[2:])
+        self.FFTYB.set(X[2:])
 
         return
