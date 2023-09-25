@@ -73,8 +73,14 @@ class EnvDataReceiver(pr.DataReceiver):
                 hidden=True
             ))
 
+            self.configChannels[i]['ptr'] = config[i]['name']
+            self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace(' ','_').replace('(','_')
+            self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace(')','').replace('[','_')
+            self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace(']','').replace('.','')
+            self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace('-','').replace('%','percent')
+                
             self.add(pr.LocalVariable(
-                name = config[i]['name'].replace(' ','_').replace('(','_').replace(')','').replace('[','_').replace(']','').replace('.','').replace('-','').replace('%','percent'),
+                name = self.configChannels[i]['ptr'],
                 description = "{} value".format(config[i]['name']),
                 value = 0.0,
             ))
@@ -87,7 +93,15 @@ class EnvDataReceiver(pr.DataReceiver):
 
         @self.command()
         def OpenGUI():
-            subprocess.Popen(["python", os.path.dirname(os.path.abspath(__file__))+"/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.{}".format(kwargs['name']), "env", "--title", "Environment 0"], shell=False)
+            subprocess.Popen(["python", os.path.dirname(os.path.abspath(__file__))+"/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.{}".format(kwargs['name']), "env", "--title", "Environmental"], shell=False)
+
+        @self.command()
+        def Clear():
+            for i in range(len(self.configChannels)):
+                self.tickCount = 0
+                self.data[i].set(np.array([]))
+                self.dataX[i].set(np.array([]))
+                self._nodes[self.configChannels[i]['ptr']].set(0)
         
         self.add(pr.LocalVariable(
             name = 'channelList',
@@ -111,12 +125,12 @@ class EnvDataReceiver(pr.DataReceiver):
             if len(xarr) == 0:
                 xarr = np.append(xarr, 0)
             else:
-                xarr = np.append(xarr, xarr[-1]+(float(self.tickCount)*self.clockT*16))
+                xarr = np.append(xarr, round((float(self.tickCount)*self.clockT*16), 2))
                 
             self.data[i].set(arr)
             self.dataX[i].set(xarr)
             
-            self._nodes[self.configChannels[i]['name'].replace(' ','_').replace('(','_').replace(')','').replace('[','_').replace(']','').replace('.','').replace('-','').replace('%','percent')].set(round(newData,5))
+            self._nodes[self.configChannels[i]['ptr']].set(round(newData,5))
             
         self.Ellapsed.set(round((float(self.tickCount)*self.clockT*16), 2))
         '''
