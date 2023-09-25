@@ -4,8 +4,9 @@
 #-----------------------------------------------------------------------------
 # File       : runLiveDisplay.py
 # Author     : Jaeyoung (Daniel) Lee
+# Modified   : Julian Mendez
 # Created    : 2022-07-28
-# Last update: 2022-07-28
+# Last update: 2023-09-25
 #-----------------------------------------------------------------------------
 # Description:
 # Script for running live display

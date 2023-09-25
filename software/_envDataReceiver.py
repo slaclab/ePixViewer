@@ -2,10 +2,10 @@
 #-----------------------------------------------------------------------------
 # Title      : Updated data receivers for PyDM live viewer
 #-----------------------------------------------------------------------------
-# File       : dataReceivers.py
-# Author     : Jaeyoung (Daniel) Lee
-# Created    : 2022-06-22
-# Last update: 2022-08-26
+# File       : _envDataReceiver.py
+# Author     : Julian Mendez
+# Created    : 2023-08-24
+# Last update: 2023-09-25
 #-----------------------------------------------------------------------------
 # Description:
 # Updated data receivers for processing image, environment, and pseudoscope

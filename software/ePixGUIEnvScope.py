@@ -2,13 +2,13 @@
 #-----------------------------------------------------------------------------
 # Title      : Configuration file for live pseudoscope monitoring
 #-----------------------------------------------------------------------------
-# File       : ePixGUIPseudoScope.py
-# Author     : Jaeyoung (Daniel) Lee
-# Created    : 2022-06-22
-# Last update: 2022-07-27
+# File       : ePixGUIEnvScope.py
+# Author     : Julian Mendez
+# Created    : 2023-09-12
+# Last update: 2022-09-25
 #-----------------------------------------------------------------------------
 # Description:
-# Configuration file for building the live pseudoscope monitoring GUI using
+# Configuration file for building the live env. monitoring GUI using
 # PyDM
 #-----------------------------------------------------------------------------
 # This file is part of the ePix rogue. It is subject to 
