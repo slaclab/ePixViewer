@@ -75,4 +75,4 @@ class DataReceiverEnvMonitoring(pr.DataReceiver):
             self.VccA.set(int(envData[6]), write = True)
             self.VccD.set(int(envData[7]), write = True)
             self.Updated.set(True, write = True)
-            
+

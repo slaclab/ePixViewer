@@ -121,4 +121,4 @@ class ePixGUIEnvMonitoring(pydm.Display):
     def ui_filepath(self):
         # Return the full path to the UI file
         return os.path.join(os.path.dirname(os.path.realpath(__file__)), self.ui_filename())
-        
+
