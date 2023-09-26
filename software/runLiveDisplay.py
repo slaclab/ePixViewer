@@ -4,8 +4,9 @@
 #-----------------------------------------------------------------------------
 # File       : runLiveDisplay.py
 # Author     : Jaeyoung (Daniel) Lee
+# Modified   : Julian Mendez
 # Created    : 2022-07-28
-# Last update: 2022-07-28
+# Last update: 2023-09-25
 #-----------------------------------------------------------------------------
 # Description:
 # Script for running live display
@@ -47,7 +48,7 @@ parser.add_argument('--title',
 
 parser.add_argument('cmd',
                     type=str,
-                    choices=['image','pseudoscope','monitor'],
+                    choices=['image','pseudoscope','monitor','env'],
                     help='Client command to issue')
 
 parser.add_argument('--sizeY',
@@ -66,6 +67,8 @@ elif args.cmd == 'monitor':
     runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
     runScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
+elif args.cmd == 'env':
+    runEnvScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 
 
 
