@@ -63,13 +63,12 @@ args = parser.parse_args()
 
 if args.cmd == 'image':
     runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title, sizeY=args.sizeY, sizeX=args.sizeX)
-elif args.cmd == 'monitor':
-    runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
     runScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
+# Use monitor if in yout Application.py your slow adc monitor is "surf.Ad9249ReadoutGroup",  use env if you use "work.AdcMon.vhd"
+elif args.cmd == 'monitor':
+    runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'env':
     runEnvScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
-
-
 
 #ePixLiveDisplay.runEpixDisplay(serverList='localhost:9099', ui='/u/gu/jaeylee/epix-hr-single-10k/software/python/ePixViewer/ePixGUIEnvMonitoring.py')
