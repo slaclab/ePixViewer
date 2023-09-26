@@ -51,11 +51,18 @@ parser.add_argument('cmd',
                     choices=['image','pseudoscope','monitor','env'],
                     help='Client command to issue')
 
+parser.add_argument('--sizeY',
+                    type=int,
+                    help='Rows of image')
+
+parser.add_argument('--sizeX',
+                    type=int,
+                    help='Columns of image')
 
 args = parser.parse_args()
 
 if args.cmd == 'image':
-    runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title)
+    runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title, sizeY=args.sizeY, sizeX=args.sizeX)
 elif args.cmd == 'monitor':
     runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
