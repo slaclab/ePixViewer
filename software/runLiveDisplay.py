@@ -65,7 +65,7 @@ if args.cmd == 'image':
     runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title, sizeY=args.sizeY, sizeX=args.sizeX)
 elif args.cmd == 'pseudoscope':
     runScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
-# Use monitor if in yout Application.py your slow adc monitor is "surf.Ad9249ReadoutGroup",  use env if you use "work.AdcMon.vhd"
+# Use monitor if in yout Application.py your slow adc monitor is "SlowADCCntrlAxi" from "epix-hr-core",  use env if you use "work.AdcMon.vhd"
 elif args.cmd == 'monitor':
     runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'env':
