@@ -4,8 +4,9 @@
 #-----------------------------------------------------------------------------
 # File       : runLiveDisplay.py
 # Author     : Jaeyoung (Daniel) Lee
+# Modified   : Julian Mendez
 # Created    : 2022-07-28
-# Last update: 2022-07-28
+# Last update: 2023-09-25
 #-----------------------------------------------------------------------------
 # Description:
 # Script for running live display
@@ -64,13 +65,12 @@ args = parser.parse_args()
 
 if args.cmd == 'image':
     runReceiverDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList, title=args.title, sizeY=args.sizeY, sizeX=args.sizeX)
-elif args.cmd == 'monitor':
-    runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'pseudoscope':
     runScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
+# Use monitor if in yout Application.py your slow adc monitor is "SlowADCCntrlAxi" from "epix-hr-core",  use env if you use "work.AdcMon.vhd"
+elif args.cmd == 'monitor':
+    runMonitorDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
 elif args.cmd == 'env':
     runEnvScopeDisplay(dataReceiver=args.dataReceiver, serverList=args.serverList)
-
-
 
 #ePixLiveDisplay.runEpixDisplay(serverList='localhost:9099', ui='/u/gu/jaeylee/epix-hr-single-10k/software/python/ePixViewer/ePixGUIEnvMonitoring.py')
