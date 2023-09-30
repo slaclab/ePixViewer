@@ -10,8 +10,8 @@ import time
 from copy import copy
 
 class DataReceiverSparkPixRt(DataReceiverBase):
-    def __init__(self, **kwargs):
-        super().__init__(48, 48, **kwargs)
+    def __init__(self, numClusters, **kwargs):
+        super().__init__(48, 48,numClusters,  **kwargs)
 
         self.framePixelRow = 48
         self.framePixelColumn = 48
@@ -68,6 +68,7 @@ class DataReceiverSparkPixRt(DataReceiverBase):
     def descramble(self, frame):
         # print('Debug: Frame counter {}'.format(self.counter))
         # self.counter = self.counter + 1
+        gainMSB                 = self.GainMSB.get()
         
         #create the frames
         current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
@@ -88,5 +89,9 @@ class DataReceiverSparkPixRt(DataReceiverBase):
         frame = frame.astype(int)
 
         current_frame_temp = np.flip(frame,0)
+
+        if gainMSB:
+            current_frame_temp = np.where(current_frame_temp % 2 == 0, current_frame_temp // 2, (current_frame_temp - 1) // 2 + 2048)
+
 
         return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())
