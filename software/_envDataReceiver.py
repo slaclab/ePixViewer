@@ -35,7 +35,7 @@ import os
 import json
 
 class EnvDataReceiver(pr.DataReceiver):
-    def __init__(self, config, rawToData, clockT, **kwargs):
+    def __init__(self, config, rawToData, clockT, payloadElementSize=4, **kwargs):
         super().__init__(**kwargs)
         
         self.configChannels = config
@@ -43,7 +43,7 @@ class EnvDataReceiver(pr.DataReceiver):
         self.clockT = clockT
         self.tickCount = 0
         self.rawToData = rawToData
-        
+        self.payloadElementSize = payloadElementSize
         enum = {}
         
         for i in range(len(config)):
@@ -111,10 +111,13 @@ class EnvDataReceiver(pr.DataReceiver):
         ))
         
     def process(self, frame):
-        payload = frame.getNumpy(0, frame.getPayload()).view(np.uint32)
-        
-        self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
-        
+        if (self.payloadElementSize == 8) :
+            payload = frame.getNumpy(0, frame.getPayload()).view(np.uint64)
+            self.tickCount = self.tickCount + int(payload[0] & np.uint64(0x0fffffff))
+        else :    
+            payload = frame.getNumpy(0, frame.getPayload()).view(np.uint32)
+            self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
+
         for i in range(len(self.configChannels)):
             newData = self.configChannels[i]['conv'](self.rawToData(int(payload[i+1])))
         
