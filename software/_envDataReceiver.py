@@ -78,11 +78,14 @@ class EnvDataReceiver(pr.DataReceiver):
             self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace(')','').replace('[','_')
             self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace(']','').replace('.','')
             self.configChannels[i]['ptr'] = self.configChannels[i]['ptr'].replace('-','').replace('%','percent')
-                
+            config[i].setdefault('units', '')
+            
             self.add(pr.LocalVariable(
                 name = self.configChannels[i]['ptr'],
                 description = "{} value".format(config[i]['name']),
                 value = 0.0,
+                units = config[i]['units'],
+                mode         = 'RO'
             ))
         
         self.add(pr.LocalVariable(
