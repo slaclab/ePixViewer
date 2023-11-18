@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from ePixViewer.software._dataReceiver import DataReceiverBase
+from ePixViewer import DataReceiverBase
 import pyrogue as pr
 import numpy as np
 import sys
@@ -9,7 +9,7 @@ import collections
 import time
 from copy import copy
 
-class DataReceiverCpix2(DataReceiverBase):
+class DataReceiverTixel48x48(DataReceiverBase):
     def __init__(self, **kwargs):
         super().__init__(96, 96, **kwargs)
     
@@ -28,4 +28,5 @@ class DataReceiverCpix2(DataReceiverBase):
             imgDesc = np.concatenate((imgTop, imgBot),0)
         else:
             imgDesc = np.zeros((48*2,48*2), dtype='uint16')
+        imgDesc = np.where((imgDesc & 0x1) == 1 , imgDesc, 0)
         return imgDesc

@@ -1,7 +1,7 @@
 import argparse
-import ePixViewer.software.ePixGUI
-import ePixViewer.software.ePixGUIEnvMonitoring
-import ePixViewer.software.ePixGUIPseudoScope
+import ePixViewer.ePixGUI
+import ePixViewer.ePixGUIEnvMonitoring
+import ePixViewer.ePixGUIPseudoScope
 
 parser = argparse.ArgumentParser('Pyrogue Client')
 
