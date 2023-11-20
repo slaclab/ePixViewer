@@ -319,8 +319,6 @@ class DataReceiverBase(pr.DataReceiver):
                 self.Queue.append(imgRaw[self.y][self.x])
                 self.ImageQueue.append(imgRaw)
 
-            
-
             # Histogram generation & automatic contrast processing:
             array = np.array(self.Queue)
             
