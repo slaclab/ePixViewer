@@ -13,4 +13,4 @@ import os
 top_level = os.path.realpath(__file__).split('ePixViewer')[0]
 
 pr.addLibraryPath(top_level+'./')
-pr.addLibraryPath(top_level+'./ePixViewer')
+pr.addLibraryPath(top_level+'./ePixViewer/python')

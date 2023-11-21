@@ -26,7 +26,7 @@ import argparse
 import pyrogue.pydm
 import sys
 
-from ePixViewer.software import *
+from ePixViewer import *
 
 
 parser = argparse.ArgumentParser('Pyrogue Client')
