@@ -1,13 +1,12 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from ePixViewer.software._dataReceiver import DataReceiverBase
+
 import pyrogue as pr
 import numpy as np
 import sys
-import collections
-import time
 from copy import copy
+from ePixViewer import DataReceiverBase
 
 
 class DataReceiverEpixHrMv2(DataReceiverBase):

@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from ePixViewer.software._dataReceiver import DataReceiverBase
+from ePixViewer import DataReceiverBase
 import pyrogue as pr
 import numpy as np
 import sys
