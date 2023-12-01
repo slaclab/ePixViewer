@@ -10,12 +10,14 @@ from ePixViewer import DataReceiverBase
 
 
 class DataReceiverEpixHrMv2(DataReceiverBase):
-    def __init__(self, **kwargs):
+    def __init__(self, descrambleEn=True, **kwargs):
         super().__init__(384, 192, **kwargs)
         self.framePixelRow = 192
         self.framePixelColumn = 384
+        self.descrambleEn = descrambleEn
         pixelsPerLanesRows = 48
         pixelsPerLanesColumns = 64
+        
         numOfBanks = 24
         bankHeight = pixelsPerLanesRows
         bankWidth = pixelsPerLanesColumns
@@ -96,4 +98,7 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         
         current_frame_temp[self.lookupTableRow, self.lookupTableCol] = imgDesc
         # returns final image
-        return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())
+        if self.descrambleEn == True :
+            return np.bitwise_and(current_frame_temp, self.PixelBitMask.get())
+        else :
+            return np.bitwise_and(imgDesc, self.PixelBitMask.get())
