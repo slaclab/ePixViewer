@@ -38,8 +38,6 @@ class ScopeDataReceiver(pr.DataReceiver):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        print(kwargs)
-
 
         @self.command()
         def OpenGUI():
