@@ -30,6 +30,7 @@ class Root(pr.Root):
     ```
 3. Import the device of your choice (e.g.: ePixHrMv2) in your _Root.py script
     ```python
+    import subprocess
     try :
         from ePixViewer.asics import ePixHrMv2
         from ePixViewer import EnvDataReceiver
