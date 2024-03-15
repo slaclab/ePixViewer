@@ -71,14 +71,20 @@ class Root(pr.Root):
    Where sizeY is the height of the image (vertical), and sizeX is the width (horizontal) and top_level is assumed to be at the level of the software folder. You may need to create a viewer for each datareceiver that you instantiate.
 
    You may want to use the following lines to normalize top_level to software folder
-
+   
 ```python
 ############## Make software top level ##########################
 top_level = os.path.realpath(__file__).split('software')[0]
 top_level = top_level+"software"
 #################################################################
 ```
-   
+7. You may want to disable the receivers on software boot. If so, you would need to manipulate the RxEnable attribute of the receiver in the root start function as follows
+```python
+def start(self, **kwargs):
+    if (self.justCtrl == False) :
+        for asicIndex in range(self.numOfAsics):    
+            getattr(self, f"DataReceiver{asicIndex}").RxEnable.set(False)
+```
 > The python code is used to illustrate. Neverthless, a few parameters have to be customized for your own setup:
 >    1. `ePixHrMv2.DataReceiverEpixHrMv2`: depends on the device you connects
 >    2. The use of rateDrop and Unbatchers depend on your firmware implementation
