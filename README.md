@@ -12,37 +12,81 @@ In order to use this module, you must:
 
 ### Image viewer
 
-1. Import the device of your choice (e.g.: ePixHr10K2M) in your _Root.py script
-    ```python
-    from ePixViewer.software.deviceFiles import ePixHr10k2M
+1. Add a switch in root to deactivate the viewer when necessary. This is necessary for Daq Integration.
+```python
+class Root(pr.Root):
+    def __init__(   self,
+            justCtrl  = False, # Enable if you only require Root for accessing AXI registers (no data)
+            ...
+            **kwargs):
+```
+
+2. Import the ePixViewer python folder in the setupLibPaths.py file with a try/except. This is necessary for Daq Integration.
+    ````python
+    try :
+        pr.addLibraryPath(top_level+'firmware/submodules/ePixViewer/python')
+    except :
+        `pass
     ```
-2. Set numOfLanes (number of lanes) variable:
+3. Import the device of your choice (e.g.: ePixHrMv2) in your _Root.py script
     ```python
-    self.numOfLanes = 5
+    import subprocess
+    try :
+        from ePixViewer.asics import ePixHrMv2
+        from ePixViewer import EnvDataReceiver
+        from ePixViewer import ScopeDataReceiver
+    except ImportError:
+        pass
     ```
-3. Prepare variables to connect AXI streams
+4. If not already implemented, prepare variables to connect AXI streams given that numOfLanes is the number of streams in your project
     ```python
-    self.dataStream    = [None for i in range(self.numOfLanes)]
-    
-    #Create rateDrop and Unbarcher if needed
-    self.rate          = [rogue.interfaces.stream.RateDrop(True, 0.1) for i in range(self.numOfLanes)]
-    self.unbatchers    = [rogue.protocols.batcher.SplitterV1() for lane in range(self.numOfLanes)]
+    if (self.justCtrl == False) :
+        self.dataStream    = [None for lane in range(self.numOfLanes)]
+        
+        #Create rateDrop, Unbatcher and filter if needed
+        self.rate          = [rogue.interfaces.stream.RateDrop(True, 0.1) for lane in range(self.numOfLanes)]
+        self.unbatchers    = [rogue.protocols.batcher.SplitterV1() for lane in range(self.numOfLanes)]
+        self.dataReceiverFilter =  [rogue.interfaces.stream.Filter(False, 2) for lane in range(self.numOfLanes)]
     ```
-4. Instantiate and connect dataReceiver following the example bellow
+5. Instantiate and connect dataReceiver following the example bellow
     ```python
-    for lane in range(self.numOfLanes):
-        #Connect data stream
-        if not self.sim:
-            self.dataStream[lane] = rogue.hardware.axi.AxiStreamDma(dev,0x100*lane+0,1)
-        else:
-            self.dataStream[lane] = rogue.interfaces.stream.TcpClient('localhost',24002+2*lane)
-            
-        self.add(ePixHr10k2M.DataReceiverEpixHr10k2M(name = f"DataReceiver{lane}"))
-        self.dataStream[lane] >> self.rate[lane] >> self.unbatchers[lane] >> getattr(self, f"DataReceiver{lane}")
+    if (self.justCtrl == False) :
+        for lane in range(self.numOfLanes):
+            #Connect data stream
+            if not self.sim:
+                self.dataStream[lane] = rogue.hardware.axi.AxiStreamDma(dev,0x100*lane+0,1)
+            else:
+                self.dataStream[lane] = rogue.interfaces.stream.TcpClient('localhost',24002+2*lane)
+                
+            self.add(ePixHrMv2.DataReceiverEpixHrMv2(name = f"DataReceiver{lane}"))
+            self.dataStream[lane] >> self.rate[lane] >> self.unbatchers[lane] >>  self.dataReceiverFilter[lane] >> getattr(self, f"DataReceiver{lane}")
    ```
+
+6. Create the command to open the viewer in root
+   ```python
+        @self.command()
+        def DisplayViewer0():
+            subprocess.Popen(["python", self.top_level+"/../firmware/submodules/ePixViewer/python/ePixViewer/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.DataReceiver0", "image", "--title", "DataReceiver0", "--sizeY", "192", "--sizeX", "384", "--serverList","localhost:{}".format(self.zmqServer.port()) ], shell=False)
+   ```
+   Where sizeY is the height of the image (vertical), and sizeX is the width (horizontal) and top_level is assumed to be at the level of the software folder. You may need to create a viewer for each datareceiver that you instantiate.
+
+   You may want to use the following lines to normalize top_level to software folder
    
+```python
+############## Make software top level ##########################
+top_level = os.path.realpath(__file__).split('software')[0]
+top_level = top_level+"software"
+#################################################################
+```
+7. You may want to disable the receivers on software boot. If so, you would need to manipulate the RxEnable attribute of the receiver in the root start function as follows
+```python
+def start(self, **kwargs):
+    if (self.justCtrl == False) :
+        for asicIndex in range(self.numOfAsics):    
+            getattr(self, f"DataReceiver{asicIndex}").RxEnable.set(False)
+```
 > The python code is used to illustrate. Neverthless, a few parameters have to be customized for your own setup:
->    1. `ePixHr10k2M.DataReceiverEpixHr10k2M`: depends on the device you connects
+>    1. `ePixHrMv2.DataReceiverEpixHrMv2`: depends on the device you connects
 >    2. The use of rateDrop and Unbatchers depend on your firmware implementation
 >    3. Addresses might vary depending on your design
    
@@ -50,7 +94,10 @@ In order to use this module, you must:
 
 1. Import the ScopeDataReceiver files in your _Root.py script
     ```python
-    from ePixViewer.software import ScopeDataReceiver
+    try :
+        from ePixViewer.software import ScopeDataReceiver
+    except ImportError:
+        pass    
     ```
 2. Set numOfScopes (number of scopes) variable:
     ```python
@@ -58,25 +105,30 @@ In order to use this module, you must:
     ```
 3. Prepare variables to connect AXI Streams
     ```python
-    self.oscopeStream  = [None for i in range(self.numOfScopes)]
+    if (self.justCtrl == False) :
+        self.oscopeStream  = [None for i in range(self.numOfScopes)]
     ```
 2. Instantiate and connect scopeDataReceiver:
     ```python
-    for vc in range(self.numOfScopes):
-        if not self.sim:
-            self.oscopeStream[vc] = rogue.hardware.axi.AxiStreamDma(dev,0x100*6+vc,1)
-        else:
-            self.oscopeStream[vc] = rogue.interfaces.stream.TcpClient('localhost',24024+2*vc)
-            
-        self.add(ScopeDataReceiver(name = f"ScopeData{vc}"))
-        self.oscopeStream[vc] >> getattr(self, f"ScopeData{vc}")
+    if (self.justCtrl == False) :
+        for vc in range(self.numOfScopes):
+            if not self.sim:
+                self.oscopeStream[vc] = rogue.hardware.axi.AxiStreamDma(dev,0x100*6+vc,1)
+            else:
+                self.oscopeStream[vc] = rogue.interfaces.stream.TcpClient('localhost',24024+2*vc)
+                
+            self.add(ScopeDataReceiver(name = f"ScopeData{vc}"))
+            self.oscopeStream[vc] >> getattr(self, f"ScopeData{vc}")
     ```
 
 ### Env viewer
 
 1. Import the ScopeDataReceiver files in your _Root.py script
     ```python
-    from ePixViewer.software import EnvDataReceiver
+    try :
+        from ePixViewer.software import EnvDataReceiver
+    except ImportError:
+        pass     
     ```
 2. Set numOfAdcmons (number of environment ADCs) variable:
     ```python
@@ -84,100 +136,71 @@ In order to use this module, you must:
     ```
 3. Prepare variables to connect AXI Streams
     ```python
-    self.adcMonStream  = [None for i in range(self.numOfAdcmons)]
+    if (self.justCtrl == False) :
+        self.adcMonStream  = [None for i in range(self.numOfAdcmons)]
     ```
 4. Configure the channels
     ```python
-    envConf = [
-        [
-            {   'id': 0, 'name': 'Therm 0 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
-            {   'id': 1, 'name': 'Therm 1 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
-            {   'id': 2, 'name': 'Analog VIN (volts)',    'conv': lambda data: data, 'color': '#00FFFF'  },
-            {   'id': 3, 'name': 'ASIC C0 AVDD (Amps)',   'conv': lambda data: data, 'color': '#FFFF00'  },
-            {   'id': 4, 'name': 'ASIC C0 DVDD (Amps)',   'conv': lambda data: data, 'color': '#F0F0F0'  },
-            {   'id': 5, 'name': 'ASIC C1 AVDD (Amps)',   'conv': lambda data: data, 'color': '#F0500F'  },
-            {   'id': 6, 'name': 'ASIC C1 DVDD (Amps)',   'conv': lambda data: data, 'color': '#503010'  },
-            {   'id': 7, 'name': 'ASIC C2 AVDD (Amps)',   'conv': lambda data: data, 'color': '#777777'  }
-        ],
-        [
-            {   'id': 0, 'name': 'Therm 2 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
-            {   'id': 1, 'name': 'Therm 3 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
-            {   'id': 2, 'name': 'ASIC C2 DVDD (Amps)',   'conv': lambda data: data, 'color': '#00FFFF'  },
-            {   'id': 3, 'name': 'ASIC C3 DVDD (Amps)',   'conv': lambda data: data, 'color': '#FFFF00'  },
-            {   'id': 4, 'name': 'ASIC C3 AVDD (Amps)',   'conv': lambda data: data, 'color': '#F0F0F0'  },
-            {   'id': 5, 'name': 'ASIC C4 DVDD (Amps)',   'conv': lambda data: data, 'color': '#F0500F'  },
-            {   'id': 6, 'name': 'ASIC C4 AVDD (Amps)',   'conv': lambda data: data, 'color': '#503010'  },
-            {   'id': 7, 'name': 'Humidity (%)',          'conv': lambda data: 45.8*data-21.3, 'color': '#777777'  }
-        ],
-        [
-            {   'id': 0, 'name': 'Therm 4 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
-            {   'id': 1, 'name': 'Therm 5 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
-            {   'id': 2, 'name': 'ASIC C0 V2 5A (volts)', 'conv': lambda data: data, 'color': '#00FFFF'  },
-            {   'id': 3, 'name': 'ASIC C1 V2 5A (volts)', 'conv': lambda data: data, 'color': '#FFFF00'  },
-            {   'id': 4, 'name': 'ASIC C2 V2 5A (volts)', 'conv': lambda data: data, 'color': '#F0F0F0'  },
-            {   'id': 5, 'name': 'ASIC C3 V2 5A (volts)', 'conv': lambda data: data, 'color': '#F0500F'  },
-            {   'id': 6, 'name': 'ASIC C4 V2 5A (volts)', 'conv': lambda data: data, 'color': '#503010'  },
-            {   'id': 7, 'name': 'Digital VIN (volts)',   'conv': lambda data: data, 'color': '#777777'  }
-        ],
-        [
-            {   'id': 0, 'name': 'Therm dig. 0 (deg. C)', 'conv': lambda data: -68.305*(data)+93.308, 'color': '#FFFFFF'  },
-            {   'id': 1, 'name': 'Therm dig. 1 (deg. C)', 'conv': lambda data: -68.305*(data)+93.308, 'color': '#FF00FF' },
-            {   'id': 2, 'name': 'Humidity dig. (%)',     'conv': lambda data: data*45.8-21.3, 'color': '#00FFFF'  },
-            {   'id': 3, 'name': '1V8 (volts)',           'conv': lambda data: data, 'color': '#FFFF00'  },
-            {   'id': 4, 'name': '2V5 (volts)',           'conv': lambda data: data, 'color': '#F0F0F0'  },
-            {   'id': 5, 'name': 'Vout 6V 10A (Amps)',    'conv': lambda data: 10*data, 'color': '#F0500F'  },
-            {   'id': 6, 'name': 'Mon VCC (volts)',       'conv': lambda data: data, 'color': '#503010'  },
-            {   'id': 7, 'name': 'Raw voltage (volts)',   'conv': lambda data: 3* data, 'color': '#777777'  }
+    if (self.justCtrl == False) :
+        envConf = [
+            [
+                {   'id': 0, 'name': 'Therm 0 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
+                {   'id': 1, 'name': 'Therm 1 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
+                {   'id': 2, 'name': 'Analog VIN (volts)',    'conv': lambda data: data, 'color': '#00FFFF'  },
+                {   'id': 3, 'name': 'ASIC C0 AVDD (Amps)',   'conv': lambda data: data, 'color': '#FFFF00'  },
+                {   'id': 4, 'name': 'ASIC C0 DVDD (Amps)',   'conv': lambda data: data, 'color': '#F0F0F0'  },
+                {   'id': 5, 'name': 'ASIC C1 AVDD (Amps)',   'conv': lambda data: data, 'color': '#F0500F'  },
+                {   'id': 6, 'name': 'ASIC C1 DVDD (Amps)',   'conv': lambda data: data, 'color': '#503010'  },
+                {   'id': 7, 'name': 'ASIC C2 AVDD (Amps)',   'conv': lambda data: data, 'color': '#777777'  }
+            ],
+            [
+                {   'id': 0, 'name': 'Therm 2 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
+                {   'id': 1, 'name': 'Therm 3 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
+                {   'id': 2, 'name': 'ASIC C2 DVDD (Amps)',   'conv': lambda data: data, 'color': '#00FFFF'  },
+                {   'id': 3, 'name': 'ASIC C3 DVDD (Amps)',   'conv': lambda data: data, 'color': '#FFFF00'  },
+                {   'id': 4, 'name': 'ASIC C3 AVDD (Amps)',   'conv': lambda data: data, 'color': '#F0F0F0'  },
+                {   'id': 5, 'name': 'ASIC C4 DVDD (Amps)',   'conv': lambda data: data, 'color': '#F0500F'  },
+                {   'id': 6, 'name': 'ASIC C4 AVDD (Amps)',   'conv': lambda data: data, 'color': '#503010'  },
+                {   'id': 7, 'name': 'Humidity (%)',          'conv': lambda data: 45.8*data-21.3, 'color': '#777777'  }
+            ],
+            [
+                {   'id': 0, 'name': 'Therm 4 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FFFFFF'  },
+                {   'id': 1, 'name': 'Therm 5 (deg. C)',      'conv': lambda data: -68.305*data+93.308, 'color': '#FF00FF' },
+                {   'id': 2, 'name': 'ASIC C0 V2 5A (volts)', 'conv': lambda data: data, 'color': '#00FFFF'  },
+                {   'id': 3, 'name': 'ASIC C1 V2 5A (volts)', 'conv': lambda data: data, 'color': '#FFFF00'  },
+                {   'id': 4, 'name': 'ASIC C2 V2 5A (volts)', 'conv': lambda data: data, 'color': '#F0F0F0'  },
+                {   'id': 5, 'name': 'ASIC C3 V2 5A (volts)', 'conv': lambda data: data, 'color': '#F0500F'  },
+                {   'id': 6, 'name': 'ASIC C4 V2 5A (volts)', 'conv': lambda data: data, 'color': '#503010'  },
+                {   'id': 7, 'name': 'Digital VIN (volts)',   'conv': lambda data: data, 'color': '#777777'  }
+            ],
+            [
+                {   'id': 0, 'name': 'Therm dig. 0 (deg. C)', 'conv': lambda data: -68.305*(data)+93.308, 'color': '#FFFFFF'  },
+                {   'id': 1, 'name': 'Therm dig. 1 (deg. C)', 'conv': lambda data: -68.305*(data)+93.308, 'color': '#FF00FF' },
+                {   'id': 2, 'name': 'Humidity dig. (%)',     'conv': lambda data: data*45.8-21.3, 'color': '#00FFFF'  },
+                {   'id': 3, 'name': '1V8 (volts)',           'conv': lambda data: data, 'color': '#FFFF00'  },
+                {   'id': 4, 'name': '2V5 (volts)',           'conv': lambda data: data, 'color': '#F0F0F0'  },
+                {   'id': 5, 'name': 'Vout 6V 10A (Amps)',    'conv': lambda data: 10*data, 'color': '#F0500F'  },
+                {   'id': 6, 'name': 'Mon VCC (volts)',       'conv': lambda data: data, 'color': '#503010'  },
+                {   'id': 7, 'name': 'Raw voltage (volts)',   'conv': lambda data: 3* data, 'color': '#777777'  }
+            ]
         ]
-    ]
     ```
 2. Instantiate and connect EnvDataReceiver:
     ```python
-    for vc in range(self.numOfScopes):
-        if not self.sim:
-            self.adcMonStream[vc] = rogue.hardware.axi.AxiStreamDma(dev,0x100*6+vc,1)
-        else:
-            self.adcMonStream[vc] = rogue.interfaces.stream.TcpClient('localhost',24016+2*vc)
-            
-        self.add(
-            EnvDataReceiver(
-                config = envConf[vc], 
-                clockT = 6.4e-9, 
-                rawToData = lambda raw: (2.5 * float(raw & 0xffffff)) / 16777216, 
-                name = f"EnvData{vc}"
+    if (self.justCtrl == False) :
+        for vc in range(self.numOfScopes):
+            if not self.sim:
+                self.adcMonStream[vc] = rogue.hardware.axi.AxiStreamDma(dev,0x100*6+vc,1)
+            else:
+                self.adcMonStream[vc] = rogue.interfaces.stream.TcpClient('localhost',24016+2*vc)
+                
+            self.add(
+                EnvDataReceiver(
+                    config = envConf[vc], 
+                    clockT = 6.4e-9, 
+                    rawToData = lambda raw: (2.5 * float(raw & 0xffffff)) / 16777216, 
+                    name = f"EnvData{vc}"
+                )
             )
-        )
-        self.adcMonStream[vc] >> getattr(self, f"EnvData{vc}")
+            self.adcMonStream[vc] >> getattr(self, f"EnvData{vc}")
     ```
-## Old Instructions
-
-1. Add the git submodule to the project
-2. Add the DataReceiver/Pseudoscope/EnvMonitor to the Root Class
-
-    ```
-    self.add(DataReceiverEpixUHR(name = f"DataReceiver0"))
-    self.add(DataReceiverPseudoScope(name = f"Pseudoscope0"))
-    self.add(DataReceiverEnvMonitoring(name = f"EnvMonitor0"))
-    ```
-
-3. Setup RateDrop object. this is needed for the data and enviroment monitor streams
-
-    ```
-    self.rate = rogue.interfaces.stream.RateDrop(True,0.1)
-    self.dmaStream[0][1] >> self.rate >> self.DataReceiver0    
-    ```
-
-4. The calls to the run the displays can be added to the register tree with subprocess
-
-    ```
-    @self.command()
-    def DisplayViewer():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.DataReceiver0 image &'], shell=True)
-    @self.command()
-    def DisplayPseudoScope():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.Pseudoscope0 pseudoscope &'], shell=True)
-    @self.command()
-    def DisplayEnvMonitor():
-        subprocess.call(['scripts/runLiveDisplay.py --dataReceiver rogue://0/root.EnvMonitor0 monitor &'], shell=True)
-    ```
-5. Copy the runLiveDisplay.py script to the location of the launch script for the daq/gui
