@@ -60,6 +60,14 @@ class Root(pr.Root):
             self.add(ePixHrMv2.DataReceiverEpixHrMv2(name = f"DataReceiver{lane}"))
             self.dataStream[lane] >> self.rate[lane] >> self.unbatchers[lane] >>  self.dataReceiverFilter[lane] >> getattr(self, f"DataReceiver{lane}")
    ```
+
+6. Create the command to open the viewer
+   ```python
+        @self.command()
+        def DisplayViewer0():
+            subprocess.Popen(["python", self.top_level+"/../firmware/submodules/ePixViewer/python/ePixViewer/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.DataReceiver0", "image", "--title", "DataReceiver0", "--sizeY", "192", "--sizeX", "384", "--serverList","localhost:{}".format(self.zmqServer.port()) ], shell=False)
+   ```
+   Where sizeY is the height of the image (vertical), and sizeX is the width (horizontal).
    
 > The python code is used to illustrate. Neverthless, a few parameters have to be customized for your own setup:
 >    1. `ePixHrMv2.DataReceiverEpixHrMv2`: depends on the device you connects
