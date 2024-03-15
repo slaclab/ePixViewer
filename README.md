@@ -67,7 +67,16 @@ class Root(pr.Root):
         def DisplayViewer0():
             subprocess.Popen(["python", self.top_level+"/../firmware/submodules/ePixViewer/python/ePixViewer/runLiveDisplay.py", "--dataReceiver", "rogue://0/root.DataReceiver0", "image", "--title", "DataReceiver0", "--sizeY", "192", "--sizeX", "384", "--serverList","localhost:{}".format(self.zmqServer.port()) ], shell=False)
    ```
-   Where sizeY is the height of the image (vertical), and sizeX is the width (horizontal). You may need to create a viewer for each datareceiver that you instantiate.
+   Where sizeY is the height of the image (vertical), and sizeX is the width (horizontal) and top_level is assumed to be at the level of the software folder. You may need to create a viewer for each datareceiver that you instantiate.
+
+   You may want to use the following lines to normalize top_level to software folder
+
+```python
+############## Make software top level ##########################
+top_level = os.path.realpath(__file__).split('software')[0]
+top_level = top_level+"software"
+#################################################################
+```
    
 > The python code is used to illustrate. Neverthless, a few parameters have to be customized for your own setup:
 >    1. `ePixHrMv2.DataReceiverEpixHrMv2`: depends on the device you connects
