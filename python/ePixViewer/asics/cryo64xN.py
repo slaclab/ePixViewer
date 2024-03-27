@@ -14,8 +14,7 @@ class DataReceiverCryo64xN(DataReceiverBase):
         super().__init__(64, 64, **kwargs)
     
     def descramble(self, frame):
-        if (type(frame != 'numpy.ndarray')):
-            img = np.frombuffer(frame,dtype='uint16')
+        img = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
         samples = int((img.shape[0]-6)/64)
         if (samples) != ((img.shape[0]-6)/64):
             imgDesc = np.zeros((64,64), dtype='uint16')
