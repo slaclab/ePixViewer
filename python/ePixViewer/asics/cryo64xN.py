@@ -11,7 +11,7 @@ from copy import copy
 
 class DataReceiverCryo64xN(DataReceiverBase):
     def __init__(self, **kwargs):
-        super().__init__(64, 64, **kwargs)
+        super().__init__(6400, 64, **kwargs)
     
     def descramble(self, frame):
         img = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
