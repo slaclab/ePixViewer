@@ -16,7 +16,7 @@ class DataReceiverEpixHrDuo10kT(DataReceiverBase):
     def descramble(self, frame):
 
         img = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
-        quadrant0 = img[6:144*384+6]
+        quadrant0 = img[0:144*384+0]
         quadrant0sq = quadrant0.reshape(-1,384)
         
         return quadrant0sq
