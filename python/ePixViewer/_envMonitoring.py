@@ -1,7 +1,7 @@
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from ePixViewer.software._dataReceiver import DataReceiverBase
+from ePixViewer._dataReceiver import DataReceiverBase
 import pyrogue as pr
 import numpy as np
 import sys
@@ -75,3 +75,4 @@ class DataReceiverEnvMonitoring(pr.DataReceiver):
             self.VccA.set(int(envData[6]), write = True)
             self.VccD.set(int(envData[7]), write = True)
             self.Updated.set(True, write = True)
+
