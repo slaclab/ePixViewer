@@ -84,13 +84,13 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
 
     def descramble(self, frame):
         rawData = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
+        print("Frame {} Asic {} Autofill {}".format(rawData[3]<< 16 | rawData[2], rawData[4] & 0x7, "engaged" if (rawData[4] >> 3 & 0x1)  else "not engaged" ))
         current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
         """performs the EpixMv2 image descrambling (simply applying lookup table) """
         if (len(rawData)==73752):
             imgDesc = np.frombuffer(rawData[24:73752],dtype='uint16').reshape(192, 384)
         else:
-            print("descramble error")
-            print('rawData length {}'.format(len(rawData)))
+            print("descramble error : rawData length {}".format(len(rawData)))
             imgDesc = np.zeros((192,384), dtype='uint16')
 
         
