@@ -89,7 +89,7 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         print("ASIC:{} F#:{} Mask:{}".format(rawData[4] & 0x7, rawData[3]<< 16 | rawData[2], hex(autoFillMask | fixedMask) ))
         current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
         """performs the EpixMv2 image descrambling (simply applying lookup table) """
-        if (len(rawData)==73768):
+        if (len(rawData)==73776):
             imgDesc = np.frombuffer(rawData[24:73752],dtype='uint16').reshape(192, 384)
         else:
             print("descramble error : rawData length {}".format(len(rawData)))
