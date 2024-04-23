@@ -91,7 +91,8 @@ class DataReceiverBase(pr.DataReceiver):
         ))
         self.add(pr.LocalVariable(
             name = "NumDarkReq",
-            value = 0,
+            value = 1,
+            localSet = self._checkNumDarReqLimit,
             description = "Number of dark requested"
         ))
         self.add(pr.LocalVariable(
@@ -205,6 +206,11 @@ class DataReceiverBase(pr.DataReceiver):
         for i in range(maxlen):
             self.TimePlotQueue.append(0)
             self.TimePlotIndexQueue.append(index + i)
+    
+    def _checkNumDarReqLimit(self,value):
+        if value < 1 :
+            raise ValueError("Cannot be less than 1")
+        pass    
     
     def resetTimePlot(self):
         maxlen = self.TimePlotMaxLen.get()
