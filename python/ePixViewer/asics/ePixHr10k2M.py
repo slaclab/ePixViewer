@@ -10,12 +10,11 @@ import time
 from copy import copy
 
 
-# expecting for even number of pixels : (2 + x) x 48 / 2
 class DataReceiverEpixHr10k2M(DataReceiverBase):
     def __init__(self, **kwargs):
         self.ASIC_NUM    = 4
         self.ASIC_WIDTH = 192
-        self.ASIC_HEIGHT  = 144
+        self.ASIC_HEIGHT  = 146
         super().__init__(self.ASIC_WIDTH * self.ASIC_NUM, self.ASIC_HEIGHT, **kwargs)
 
     def descramble(self, frame):
