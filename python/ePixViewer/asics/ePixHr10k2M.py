@@ -37,7 +37,7 @@ class DataReceiverEpixHr10k2M(DataReceiverBase):
             #descramble image
             #get data for each bank
             adcImg = quadrant0.reshape(-1,24)
-            for i in range(0,23):
+            for i in range(0,24):
                 #reshape data into 2D array per bank
                 adcImg2 = adcImg[0:adcImg.shape[0],i].reshape(-1,32)
                 #apply row-shift patch
