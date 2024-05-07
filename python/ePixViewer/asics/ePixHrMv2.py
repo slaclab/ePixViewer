@@ -14,6 +14,7 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
         super().__init__(384, 192, **kwargs)
         self.framePixelRow = 192
         self.framePixelColumn = 384
+        self.header = 24
         pixelsPerLanesRows = 48
         pixelsPerLanesColumns = 64
         numOfBanks = 24
@@ -84,16 +85,17 @@ class DataReceiverEpixHrMv2(DataReceiverBase):
 
     def descramble(self, frame):
         rawData = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
-        autoFillMask = rawData[73753] << 16 | rawData[73752] 
-        fixedMask    = rawData[73755] << 16 | rawData[73754] 
+        tailIndex = self.framePixelColumn * self.framePixelRow + self.header
+        autoFillMask = rawData[tailIndex+1] << 16 | rawData[tailIndex] 
+        fixedMask    = rawData[tailIndex+3] << 16 | rawData[tailIndex+2] 
         print("ASIC:{} F#:{} Mask:{}".format(rawData[4] & 0x7, rawData[3]<< 16 | rawData[2], hex(autoFillMask | fixedMask) ))
         current_frame_temp = np.zeros((self.framePixelRow, self.framePixelColumn), dtype=int)
         """performs the EpixMv2 image descrambling (simply applying lookup table) """
         if (len(rawData)==73776):
-            imgDesc = np.frombuffer(rawData[24:73752],dtype='uint16').reshape(192, 384)
+            imgDesc = np.frombuffer(rawData[self.header:tailIndex],dtype='uint16').reshape(self.framePixelRow, self.framePixelColumn)
         else:
             print("descramble error : rawData length {}".format(len(rawData)))
-            imgDesc = np.zeros((192,384), dtype='uint16')
+            imgDesc = np.zeros((self.framePixelRow,self.framePixelColumn), dtype='uint16')
 
         
         current_frame_temp[self.lookupTableRow, self.lookupTableCol] = imgDesc
