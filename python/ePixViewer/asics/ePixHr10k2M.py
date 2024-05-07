@@ -14,19 +14,25 @@ class DataReceiverEpixHr10k2M(DataReceiverBase):
     def __init__(self, **kwargs):
         self.ASIC_NUM    = 4
         self.ASIC_WIDTH = 192
-        self.ASIC_HEIGHT  = 146
+        self.ASIC_HEIGHT  = 144
+        self.header = 24
         super().__init__(self.ASIC_WIDTH * self.ASIC_NUM, self.ASIC_HEIGHT, **kwargs)
 
     def descramble(self, frame):
         # Function to descramble raw frames into numpy arrays
         payload = frame.getNumpy(0, frame.getPayload()).view(np.uint16)
-        #array1_hex = np.array([hex(y) for y in img])
-        #print("{} got payload of size {} uint16 {}".format(self.name, img.shape[0], array1_hex))
-
-        #print("{} got payload of size {} (uint16). Extracted image of size {} (uint16) {}".format(self.name, payload.shape[0], img.shape[0], img))
+        #array1_hex = np.array([hex(y) for y in payload])
+        #print("{} got payload of size {} uint16 {}".format(self.name, payload.shape[0], array1_hex[tailIndex:]))
+        #print("{} got payload of size {} (uint16)".format(self.name, 
+        #                                payload.shape[0]))
         if (len(payload)==110640):
-            img = payload[24:self.ASIC_HEIGHT * self.ASIC_WIDTH * self.ASIC_NUM + 24]
+            tailIndex = self.ASIC_WIDTH * self.ASIC_NUM * self.ASIC_HEIGHT + self.header
+            autoFillMask = payload[tailIndex+1] << 16 | payload[tailIndex] 
+            fixedMask    = payload[tailIndex+3] << 16 | payload[tailIndex+2] 
+            print("MODULE:{} F#:{} Mask:{}".format(payload[4] & 0x7, payload[3]<< 16 | payload[2], hex(autoFillMask | fixedMask) ))            
 
+            img = payload[self.header:self.ASIC_HEIGHT * self.ASIC_WIDTH * self.ASIC_NUM + self.header]
+    
             quadrant0 = img
             #descramble image
             #get data for each bank
