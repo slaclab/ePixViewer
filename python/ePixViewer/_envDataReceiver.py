@@ -116,14 +116,21 @@ class EnvDataReceiver(pr.DataReceiver):
     def process(self, frame):
         if (self.payloadElementSize == 8) :
             payload = frame.getNumpy(0, frame.getPayload()).view(np.uint64)
-            self.tickCount = self.tickCount + int(payload[0] & np.uint64(0x0fffffff))
+            if self.clockT is not None:
+                self.tickCount = self.tickCount + int(payload[0] & np.uint64(0x0fffffff))
+            else:
+                self.tickCount += 1
         else :    
             payload = frame.getNumpy(0, frame.getPayload()).view(np.uint32)
-            self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
+            if self.clockT is not None:
+                self.tickCount = self.tickCount + int(payload[0] & 0x0fffffff)
+            else:
+                self.tickCount += 1
 
-        for i in range(len(self.configChannels)):
-            newData = self.configChannels[i]['conv'](self.rawToData(int(payload[i+1])))
         
+        for i in range(len(self.configChannels)):
+            newData = self.configChannels[i]['conv'](self.rawToData(int(payload[self.configChannels[i]['id']+1])))
+            
             arr = self.data[i].get()
             arr = np.append(arr, newData)
             
@@ -131,16 +138,22 @@ class EnvDataReceiver(pr.DataReceiver):
             if len(xarr) == 0:
                 xarr = np.append(xarr, 0)
             else:
-                xarr = np.append(xarr, round((float(self.tickCount)*self.clockT*16), 2))
+                if self.clockT is not None:
+                    xarr = np.append(xarr, round((float(self.tickCount)*self.clockT*16), 2))
+                else:
+                    xarr = np.append(xarr, self.tickCount)
                 
             self.data[i].set(arr)
             self.dataX[i].set(xarr)
             
             self._nodes[self.configChannels[i]['ptr']].set(round(newData,5))
             
-        self.Ellapsed.set(round((float(self.tickCount)*self.clockT*16), 2))
-        '''
+        if self.clockT is not None:
+            self.Ellapsed.set(round((float(self.tickCount)*self.clockT*16), 2))
+        else:
+            self.Ellapsed += 1
         
+        '''
         print('PAYLOAD LEN: {}'.format(len(payload)))
         print('{:x} - tick count : {:x} \'h'.format((payload[0] & 0xf0000000) >> 28, int(payload[0] & 0x0fffffff)))
         print('Ch {:d}: {:f}'.format((payload[1] & 0xff000000) >> 24, (5* float(payload[1] & 0xffffff) / 16777216)))
