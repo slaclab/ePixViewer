@@ -10,8 +10,10 @@ import time
 from copy import copy
 
 class DataReceiverEpixUHR100kHz(DataReceiverBase):
-    def __init__(self, numClusters, **kwargs):
+    def __init__(self, numClusters,timingMessage, **kwargs):
         super().__init__(192, 168, numClusters, **kwargs)
+
+        self.timingMessage = timingMessage
 
     def read_uint12(self,data_chunk):
         #https://stackoverflow.com/questions/44735756/python-reading-12-bit-binary-files
@@ -56,8 +58,14 @@ class DataReceiverEpixUHR100kHz(DataReceiverBase):
 
     def descramble(self, frame):
         #Intial setting
-        frameSize               = 48400
+        
         gainMSB                 = self.GainMSB.get()
+        if (self.timingMessage):
+            skipHeader          = 64
+            frameSize           = 48448
+        else:
+            skipHeader          = 16
+            frameSize           = 48400
 
         #create the frames
         full_frame          = np.empty((168,192), dtype=int)
@@ -67,7 +75,7 @@ class DataReceiverEpixUHR100kHz(DataReceiverBase):
         rawData_8bit = frame.getNumpy(0, frame.getPayload()).view(np.uint8)
         # I remove the first 8 bytes that are trash. we should have 48384 bytes: 168*192*12 bit/8bit
         # each of the 8 columns represents one of the lanes
-        rawData_8bit = np.reshape(rawData_8bit[16:frameSize],(6048,8))
+        rawData_8bit = np.reshape(rawData_8bit[skipHeader:frameSize],(6048,8))
 
 
         for lanes in range(8):
