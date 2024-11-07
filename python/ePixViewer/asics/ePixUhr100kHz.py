@@ -22,6 +22,23 @@ class DataReceiverEpixUHR100kHz(DataReceiverBase):
         snd_uint12 = ((mid_uint8 % 16) << 8) + lst_uint8
         return np.reshape(np.concatenate((fst_uint12[:, None], snd_uint12[:, None]), axis=1), 2 * fst_uint12.shape[0])
 
+    # Function to convert the 8bits values back into 12 bits elements
+    def pack_6_8bit_to_4_12bit_matrix(self, arr):
+        # Ensure the input has 6 columns (i.e., shape is N x 6)
+        if arr.shape[1] != 6:
+            raise ValueError("Input array must have exactly 6 columns for each group.")
+
+        # Step 1: Process each row of 6 bytes
+        first_12bit = (arr[:, 0] << 4) | (arr[:, 1] >> 4)
+        second_12bit = ((arr[:, 1] & 0x0F) << 8) | arr[:, 2]
+        third_12bit = (arr[:, 3] << 4) | (arr[:, 4] >> 4)
+        fourth_12bit = ((arr[:, 4] & 0x0F) << 8) | arr[:, 5]
+
+        # Step 2: Stack results into a 2D array where each row has four 12-bit values
+        result = np.column_stack((first_12bit, second_12bit, third_12bit, fourth_12bit))
+
+        return result.astype(np.uint16)
+
     def lane_map_uhr100(self):
         column_map = []
         cluster_map = np.empty(72)
@@ -79,26 +96,12 @@ class DataReceiverEpixUHR100kHz(DataReceiverBase):
 
 
         for lanes in range(8):
-            lane_48bit = np.empty((1008,6))
             lane_12bit = np.empty((1008,4), dtype='int')
-            #I am going back to the 64 bit
+            # Going back to the 64 bit
             lane_raw = rawData_8bit[:,lanes]
-            lane_64bit = np.flip(np.reshape(lane_raw, (756,8)),1)
-            # now each row is the output of the 48:64 gearbox.
-            for i in range(252):
-                lane_48bit[0+i*4,0:6]=lane_64bit[0+i*3,2:8]
-                lane_48bit[1+i*4,0:4]=lane_64bit[1+i*3,4:8]
-                lane_48bit[1+i*4,4:6]=lane_64bit[0+i*3,0:2]
-                lane_48bit[2+i*4,0:2]=lane_64bit[2+i*3,6:8]
-                lane_48bit[2+i*4,2:8]=lane_64bit[1+i*3,0:4]
-                lane_48bit[3+i*4,0:6]=lane_64bit[2+i*3,0:6]
-            
-            #now we need to shift from 8bit per entry to 12bit per entry
-            for j in range (1008):
-                lane_12bit[j,:] = self.read_uint12(lane_48bit[j,:])
-                
-            lane_12bit = np.flip(lane_12bit,1)
-            full_frame_12bit[:,lanes*4:(lanes*4)+4] = lane_12bit
+            lane_48bit =np.flip(np.reshape(lane_raw,(1008,6)),1)
+            lane_12bit = np.flip(self.pack_6_8bit_to_4_12bit_matrix(lane_48bit.astype(np.uint16)),1)
+            full_frame_12bit[:, lanes * 4:(lanes * 4) + 4] = lane_12bit
 
 
         for columns in range(16):
